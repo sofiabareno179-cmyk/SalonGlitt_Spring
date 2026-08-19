@@ -1,0 +1,20 @@
+# ---- Java / Maven ----
+target/
+*.class
+
+# ---- IDE ----
+.idea/
+*.iml
+.vscode/launch.json.bak
+
+# ---- Sistema ----
+.DS_Store
+Thumbs.db
+
+# ---- Entorno ----
+.env
+.env.local
+*.local
+
+# ---- Logs ----
+*.log
