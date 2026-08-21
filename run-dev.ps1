@@ -5,6 +5,18 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if (-not $env:JAVA_HOME) {
+    $jdk = Get-ChildItem 'C:\Program Files\Java' -Directory -Filter 'jdk-*' -ErrorAction SilentlyContinue |
+        Sort-Object Name -Descending | Select-Object -First 1
+    if ($jdk) {
+        $env:JAVA_HOME = $jdk.FullName
+        Write-Host "JAVA_HOME establecido en: $($jdk.FullName)" -ForegroundColor Yellow
+    } else {
+        Write-Host "ERROR: No se encontró JDK en C:\Program Files\Java" -ForegroundColor Red
+        exit 1
+    }
+}
+
 if (-not (Test-Path -LiteralPath ".env")) {
     Write-Host "AVISO: No existe .env. Copiando desde .env.example..." -ForegroundColor Yellow
     Copy-Item ".env.example" ".env"
