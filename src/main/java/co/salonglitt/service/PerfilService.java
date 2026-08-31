@@ -31,6 +31,7 @@ public class PerfilService {
     }
 
     public PerfilResponseDTO create(PerfilRequestDTO dto) {
+        validarNombreUnico(dto.nombre().trim(), null);
         long id = secuencia.incrementAndGet();
         Perfil p = new Perfil(id, dto.nombre().trim(), dto.descripcion());
         datos.put(id, p);
@@ -39,6 +40,7 @@ public class PerfilService {
 
     public PerfilResponseDTO update(Long id, PerfilRequestDTO dto) {
         Perfil actual = obtener(id);
+        validarNombreUnico(dto.nombre().trim(), id);
         Perfil p = new Perfil(actual.id(), dto.nombre().trim(), dto.descripcion());
         datos.put(id, p);
         return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
@@ -55,5 +57,15 @@ public class PerfilService {
             throw new NotFoundException("Perfil no encontrado con id " + id);
         }
         return p;
+    }
+
+    private void validarNombreUnico(String nombre, Long exceptoId) {
+        datos.values().stream()
+                .filter(p -> p.nombre().equalsIgnoreCase(nombre))
+                .filter(p -> exceptoId == null || !p.id().equals(exceptoId))
+                .findFirst()
+                .ifPresent(p -> {
+                    throw new IllegalArgumentException("Ya existe un perfil con el nombre " + nombre);
+                });
     }
 }
