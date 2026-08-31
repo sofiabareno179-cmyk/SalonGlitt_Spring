@@ -21,6 +21,9 @@ public class CitaService {
 
     private static final String ESTADO_POR_DEFECTO = "PENDIENTE";
 
+    private static final java.util.Set<String> ESTADOS_VALIDOS =
+            java.util.Set.of("PENDIENTE", "CONFIRMADA", "COMPLETADA", "CANCELADA");
+
     private final Map<Long, Cita> datos = new ConcurrentHashMap<>();
     private final AtomicLong secuencia = new AtomicLong();
     private final UsuarioService usuarioService;
@@ -77,8 +80,9 @@ public class CitaService {
 
     public CitaResponseDTO cambiarEstado(Long id, String estado) {
         Cita actual = obtener(id);
+        String nuevoEstado = resolverEstado(estado);
         Cita c = new Cita(actual.id(), actual.clienteId(), actual.clienteNombre(), actual.servicioId(),
-                actual.servicioNombre(), actual.fechaHora(), estado.trim().toUpperCase());
+                actual.servicioNombre(), actual.fechaHora(), nuevoEstado);
         datos.put(id, c);
         return aDto(c);
     }
@@ -101,7 +105,15 @@ public class CitaService {
     }
 
     private String resolverEstado(String estado) {
-        return (estado == null || estado.isBlank()) ? ESTADO_POR_DEFECTO : estado.trim().toUpperCase();
+        if (estado == null || estado.isBlank()) {
+            return ESTADO_POR_DEFECTO;
+        }
+        String normalizado = estado.trim().toUpperCase();
+        if (!ESTADOS_VALIDOS.contains(normalizado)) {
+            throw new IllegalArgumentException("Estado no válido: " + estado
+                    + ". Permitidos: " + String.join(", ", ESTADOS_VALIDOS));
+        }
+        return normalizado;
     }
 
     private CitaResponseDTO aDto(Cita c) {
