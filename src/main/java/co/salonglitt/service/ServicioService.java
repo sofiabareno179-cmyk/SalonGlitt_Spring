@@ -2,63 +2,56 @@ package co.salonglitt.service;
 
 import co.salonglitt.dto.ServicioRequestDTO;
 import co.salonglitt.dto.ServicioResponseDTO;
+import co.salonglitt.entity.Servicio;
 import co.salonglitt.exception.NotFoundException;
+import co.salonglitt.repository.ServicioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class ServicioService {
 
-    private record Servicio(Long id, String nombre, String descripcion,
-                            java.math.BigDecimal precio, Integer duracionMinutos, boolean activo) {
-    }
+    private final ServicioRepository servicioRepository;
 
-    private final Map<Long, Servicio> datos = new ConcurrentHashMap<>();
-    private final AtomicLong secuencia = new AtomicLong();
+    public ServicioService(ServicioRepository servicioRepository) {
+        this.servicioRepository = servicioRepository;
+    }
 
     public List<ServicioResponseDTO> findAll() {
-        return datos.values().stream().map(this::aDto).toList();
+        return servicioRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public ServicioResponseDTO findById(Long id) {
+    public ServicioResponseDTO findById(Integer id) {
         return aDto(obtener(id));
     }
 
     public ServicioResponseDTO create(ServicioRequestDTO dto) {
-        long id = secuencia.incrementAndGet();
-        Servicio s = new Servicio(id, dto.nombre().trim(), dto.descripcion(), dto.precio(),
-                dto.duracionMinutos(), dto.activo() == null || dto.activo());
-        datos.put(id, s);
-        return aDto(s);
+        Servicio s = new Servicio(dto.nombre().trim(), dto.precio(), dto.duracion().trim(), dto.categoria().trim(), dto.imagen());
+        return aDto(servicioRepository.save(s));
     }
 
-    public ServicioResponseDTO update(Long id, ServicioRequestDTO dto) {
+    public ServicioResponseDTO update(Integer id, ServicioRequestDTO dto) {
         Servicio actual = obtener(id);
-        Servicio s = new Servicio(actual.id(), dto.nombre().trim(), dto.descripcion(), dto.precio(),
-                dto.duracionMinutos(), dto.activo() == null || dto.activo());
-        datos.put(id, s);
-        return aDto(s);
+        actual.setNombre(dto.nombre().trim());
+        actual.setPrecio(dto.precio());
+        actual.setDuracion(dto.duracion().trim());
+        actual.setCategoria(dto.categoria().trim());
+        actual.setImagen(dto.imagen());
+        return aDto(servicioRepository.save(actual));
     }
 
-    public void delete(Long id) {
-        obtener(id);
-        datos.remove(id);
+    public void delete(Integer id) {
+        Servicio s = obtener(id);
+        servicioRepository.delete(s);
     }
 
-    private Servicio obtener(Long id) {
-        Servicio s = datos.get(id);
-        if (s == null) {
-            throw new NotFoundException("Servicio no encontrado con id " + id);
-        }
-        return s;
+    public Servicio obtener(Integer id) {
+        return servicioRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Servicio no encontrado con id " + id));
     }
 
     private ServicioResponseDTO aDto(Servicio s) {
-        return new ServicioResponseDTO(s.id(), s.nombre(), s.descripcion(), s.precio(),
-                s.duracionMinutos(), s.activo());
+        return new ServicioResponseDTO(s.getId(), s.getNombre(), s.getPrecio(), s.getDuracion(), s.getCategoria(), s.getImagen());
     }
 }

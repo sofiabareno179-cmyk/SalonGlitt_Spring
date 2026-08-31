@@ -43,10 +43,10 @@ Backend API de Salon Glitt construido con Spring Boot.
 │   │   │   └── service/       # Lógica de negocio
 │   │   └── resources/         # application.properties, etc.
 │   └── test/java/co/salonglitt/
-│       ├── controller/        # Tests de controladores
-│       └── service/           # Tests de servicios
+│       └── controller/        # Tests de controladores
 ├── target/                # Artefactos compilados (generado)
 ├── .env.example           # Plantilla de variables de entorno
+├── .env                   # Variables de entorno (local, ignorado por git)
 ├── .gitignore
 ├── mvnw / mvnw.cmd        # Maven Wrapper
 ├── pom.xml

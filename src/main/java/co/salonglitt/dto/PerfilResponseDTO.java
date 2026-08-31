@@ -1,7 +1,10 @@
 package co.salonglitt.dto;
 
 public record PerfilResponseDTO(
-        Long id,
+        Integer id,
         String nombre,
-        String descripcion) {
+        String apellido,
+        String bio,
+        Integer usuarioId,
+        String usuarioNombre) {
 }

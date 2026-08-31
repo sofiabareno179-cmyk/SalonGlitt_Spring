@@ -2,99 +2,65 @@ package co.salonglitt.service;
 
 import co.salonglitt.dto.AgendaRequestDTO;
 import co.salonglitt.dto.AgendaResponseDTO;
-import co.salonglitt.dto.UsuarioResponseDTO;
+import co.salonglitt.entity.Agenda;
+import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
+import co.salonglitt.repository.AgendaRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class AgendaService {
 
-    private record Bloque(Long id, Long estilistaId, String estilistaNombre, LocalDate fecha,
-                          LocalTime horaInicio, LocalTime horaFin, boolean disponible) {
-    }
-
-    private final Map<Long, Bloque> datos = new ConcurrentHashMap<>();
-    private final AtomicLong secuencia = new AtomicLong();
+    private final AgendaRepository agendaRepository;
     private final UsuarioService usuarioService;
 
-    public AgendaService(UsuarioService usuarioService) {
+    public AgendaService(AgendaRepository agendaRepository, UsuarioService usuarioService) {
+        this.agendaRepository = agendaRepository;
         this.usuarioService = usuarioService;
     }
 
     public List<AgendaResponseDTO> findAll() {
-        return datos.values().stream().map(this::aDto).toList();
+        return agendaRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public AgendaResponseDTO findById(Long id) {
+    public AgendaResponseDTO findById(Integer id) {
         return aDto(obtener(id));
     }
 
-    public List<AgendaResponseDTO> findByEstilista(Long estilistaId) {
-        validarEstilista(estilistaId);
-        return datos.values().stream()
-                .filter(b -> b.estilistaId().equals(estilistaId))
-                .map(this::aDto)
-                .toList();
-    }
-
-    public List<AgendaResponseDTO> findByEstilistaYFecha(Long estilistaId, LocalDate fecha) {
-        validarEstilista(estilistaId);
-        return datos.values().stream()
-                .filter(b -> b.estilistaId().equals(estilistaId) && b.fecha().equals(fecha))
-                .map(this::aDto)
-                .toList();
-    }
-
     public AgendaResponseDTO create(AgendaRequestDTO dto) {
-        if (!dto.horaFin().isAfter(dto.horaInicio())) {
-            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
-        }
-        var estilista = validarEstilista(dto.estilistaId());
-        long id = secuencia.incrementAndGet();
-        Bloque b = new Bloque(id, estilista.id(), estilista.nombre(), dto.fecha(),
-                dto.horaInicio(), dto.horaFin(), dto.disponible() == null || dto.disponible());
-        datos.put(id, b);
-        return aDto(b);
+        Usuario usuario = validarUsuario(dto.usuarioId());
+        Agenda a = new Agenda(dto.diasemana().trim(), dto.horainicio().trim(), dto.horafin().trim(), usuario);
+        return aDto(agendaRepository.save(a));
     }
 
-    public AgendaResponseDTO update(Long id, AgendaRequestDTO dto) {
-        obtener(id);
-        if (!dto.horaFin().isAfter(dto.horaInicio())) {
-            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
-        }
-        var estilista = validarEstilista(dto.estilistaId());
-        Bloque b = new Bloque(id, estilista.id(), estilista.nombre(), dto.fecha(),
-                dto.horaInicio(), dto.horaFin(), dto.disponible() == null || dto.disponible());
-        datos.put(id, b);
-        return aDto(b);
+    public AgendaResponseDTO update(Integer id, AgendaRequestDTO dto) {
+        Agenda actual = obtener(id);
+        Usuario usuario = validarUsuario(dto.usuarioId());
+        actual.setDiasemana(dto.diasemana().trim());
+        actual.setHorainicio(dto.horainicio().trim());
+        actual.setHorafin(dto.horafin().trim());
+        actual.setUsuario(usuario);
+        return aDto(agendaRepository.save(actual));
     }
 
-    public void delete(Long id) {
-        obtener(id);
-        datos.remove(id);
+    public void delete(Integer id) {
+        Agenda a = obtener(id);
+        agendaRepository.delete(a);
     }
 
-    private Bloque obtener(Long id) {
-        Bloque b = datos.get(id);
-        if (b == null) {
-            throw new NotFoundException("Bloque de agenda no encontrado con id " + id);
-        }
-        return b;
+    private Agenda obtener(Integer id) {
+        return agendaRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bloque de agenda no encontrado con id " + id));
     }
 
-    private UsuarioResponseDTO validarEstilista(Long estilistaId) {
-        return usuarioService.findById(estilistaId);
+    private Usuario validarUsuario(Integer usuarioId) {
+        return usuarioService.obtener(usuarioId);
     }
 
-    private AgendaResponseDTO aDto(Bloque b) {
-        return new AgendaResponseDTO(b.id(), b.estilistaId(), b.estilistaNombre(), b.fecha(),
-                b.horaInicio(), b.horaFin(), b.disponible());
+    private AgendaResponseDTO aDto(Agenda a) {
+        return new AgendaResponseDTO(a.getId(), a.getDiasemana(), a.getHorainicio(), a.getHorafin(),
+                a.getUsuario().getId(), a.getUsuario().getNombreuser());
     }
 }

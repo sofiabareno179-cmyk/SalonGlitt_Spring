@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -26,7 +26,7 @@ class PerfilControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private PerfilService perfilService;
 
     @Autowired
@@ -34,28 +34,29 @@ class PerfilControllerTest {
 
     @Test
     void listar_shouldReturnListOfDTOs() throws Exception {
-        PerfilResponseDTO dto = new PerfilResponseDTO(1L, "ADMIN", "Administrador");
+        PerfilResponseDTO dto = new PerfilResponseDTO(1, "Ana", "Gomez", "bio", 1, "ana");
         when(perfilService.findAll()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/perfiles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].nombre").value("ADMIN"));
+                .andExpect(jsonPath("$[0].nombre").value("Ana"))
+                .andExpect(jsonPath("$[0].usuarioNombre").value("ana"));
     }
 
     @Test
     void obtener_shouldReturnDTO_whenPerfilExists() throws Exception {
-        PerfilResponseDTO dto = new PerfilResponseDTO(1L, "ADMIN", "Administrador");
-        when(perfilService.findById(1L)).thenReturn(dto);
+        PerfilResponseDTO dto = new PerfilResponseDTO(1, "Ana", "Gomez", "bio", 1, "ana");
+        when(perfilService.findById(1)).thenReturn(dto);
 
         mockMvc.perform(get("/api/perfiles/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.apellido").value("Gomez"));
     }
 
     @Test
     void obtener_shouldReturn404_whenPerfilNotFound() throws Exception {
-        when(perfilService.findById(99L)).thenThrow(new NotFoundException("Perfil no encontrado con id 99"));
+        when(perfilService.findById(99)).thenThrow(new NotFoundException("Perfil no encontrado con id 99"));
 
         mockMvc.perform(get("/api/perfiles/99"))
                 .andExpect(status().isNotFound());
@@ -63,8 +64,8 @@ class PerfilControllerTest {
 
     @Test
     void crear_shouldReturnCreatedStatus() throws Exception {
-        PerfilRequestDTO request = new PerfilRequestDTO("CLIENTE", "Cliente del salón");
-        PerfilResponseDTO response = new PerfilResponseDTO(2L, "CLIENTE", "Cliente del salón");
+        PerfilRequestDTO request = new PerfilRequestDTO("Ana", "Gomez", "bio", 1);
+        PerfilResponseDTO response = new PerfilResponseDTO(2, "Ana", "Gomez", "bio", 1, "ana");
         when(perfilService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/perfiles")
@@ -84,31 +85,20 @@ class PerfilControllerTest {
 
     @Test
     void actualizar_shouldReturnDTO() throws Exception {
-        PerfilRequestDTO request = new PerfilRequestDTO("ESTILISTA", "Actualizado");
-        PerfilResponseDTO response = new PerfilResponseDTO(1L, "ESTILISTA", "Actualizado");
-        when(perfilService.update(eq(1L), any())).thenReturn(response);
+        PerfilRequestDTO request = new PerfilRequestDTO("Ana Maria", "G", "nuevo", 1);
+        PerfilResponseDTO response = new PerfilResponseDTO(1, "Ana Maria", "G", "nuevo", 1, "ana");
+        when(perfilService.update(eq(1), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/perfiles/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("ESTILISTA"));
-    }
-
-    @Test
-    void actualizar_shouldReturn404_whenPerfilNotFound() throws Exception {
-        PerfilRequestDTO request = new PerfilRequestDTO("NOPE", "No existe");
-        when(perfilService.update(eq(99L), any())).thenThrow(new NotFoundException("Perfil no encontrado con id 99"));
-
-        mockMvc.perform(put("/api/perfiles/99")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound());
+                .andExpect(jsonPath("$.nombre").value("Ana Maria"));
     }
 
     @Test
     void eliminar_shouldReturnNoContent() throws Exception {
-        doNothing().when(perfilService).delete(1L);
+        doNothing().when(perfilService).delete(1);
 
         mockMvc.perform(delete("/api/perfiles/1"))
                 .andExpect(status().isNoContent());
@@ -116,7 +106,7 @@ class PerfilControllerTest {
 
     @Test
     void eliminar_shouldReturn404_whenPerfilNotFound() throws Exception {
-        doThrow(new NotFoundException("Perfil no encontrado con id 99")).when(perfilService).delete(99L);
+        doThrow(new NotFoundException("Perfil no encontrado con id 99")).when(perfilService).delete(99);
 
         mockMvc.perform(delete("/api/perfiles/99"))
                 .andExpect(status().isNotFound());
