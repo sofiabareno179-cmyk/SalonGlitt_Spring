@@ -39,6 +39,7 @@ public class UsuarioService {
 
     public UsuarioResponseDTO create(UsuarioRequestDTO dto) {
         var perfil = perfilService.findById(dto.perfilId());
+        validarEmailUnico(dto.email().trim(), null);
         long id = secuencia.incrementAndGet();
         Usuario u = new Usuario(id, dto.nombre().trim(), dto.email().trim(), dto.telefono(),
                 perfil.id(), perfil.nombre(), dto.activo() == null || dto.activo());
@@ -47,9 +48,10 @@ public class UsuarioService {
     }
 
     public UsuarioResponseDTO update(Long id, UsuarioRequestDTO dto) {
-        Usuario actual = obtener(id);
+        obtener(id);
         var perfil = perfilService.findById(dto.perfilId());
-        Usuario u = new Usuario(actual.id(), dto.nombre().trim(), dto.email().trim(), dto.telefono(),
+        validarEmailUnico(dto.email().trim(), id);
+        Usuario u = new Usuario(id, dto.nombre().trim(), dto.email().trim(), dto.telefono(),
                 perfil.id(), perfil.nombre(), dto.activo() == null || dto.activo());
         datos.put(id, u);
         return aDto(u);
@@ -66,6 +68,16 @@ public class UsuarioService {
             throw new NotFoundException("Usuario no encontrado con id " + id);
         }
         return u;
+    }
+
+    private void validarEmailUnico(String email, Long exceptoId) {
+        datos.values().stream()
+                .filter(u -> u.email().equalsIgnoreCase(email))
+                .filter(u -> exceptoId == null || !u.id().equals(exceptoId))
+                .findFirst()
+                .ifPresent(u -> {
+                    throw new IllegalArgumentException("Ya existe un usuario con el email " + email);
+                });
     }
 
     private UsuarioResponseDTO aDto(Usuario u) {
