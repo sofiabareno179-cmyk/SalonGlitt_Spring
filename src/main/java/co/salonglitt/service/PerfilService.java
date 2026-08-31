@@ -30,34 +30,33 @@ public class PerfilService {
     }
 
     public PerfilResponseDTO create(PerfilRequestDTO dto) {
-<<<<<<< HEAD
+
         Usuario usuario = usuarioService.obtener(dto.usuarioId());
         Perfil p = new Perfil(dto.nombre().trim(), dto.apellido(), dto.bio(), usuario);
         return aDto(perfilRepository.save(p));
-=======
+
         validarNombreUnico(dto.nombre().trim(), null);
         long id = secuencia.incrementAndGet();
         Perfil p = new Perfil(id, dto.nombre().trim(), dto.descripcion());
         datos.put(id, p);
         return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
->>>>>>> c941d9769e25da0beb4b0ae1a46f61ac155acdec
+
     }
 
     public PerfilResponseDTO update(Integer id, PerfilRequestDTO dto) {
         Perfil actual = obtener(id);
-<<<<<<< HEAD
         Usuario usuario = usuarioService.obtener(dto.usuarioId());
         actual.setNombre(dto.nombre().trim());
         actual.setApellido(dto.apellido());
         actual.setBio(dto.bio());
         actual.setUsuario(usuario);
         return aDto(perfilRepository.save(actual));
-=======
+
         validarNombreUnico(dto.nombre().trim(), id);
         Perfil p = new Perfil(actual.id(), dto.nombre().trim(), dto.descripcion());
         datos.put(id, p);
         return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
->>>>>>> c941d9769e25da0beb4b0ae1a46f61ac155acdec
+
     }
 
     public void delete(Integer id) {
@@ -70,13 +69,11 @@ public class PerfilService {
                 .orElseThrow(() -> new NotFoundException("Perfil no encontrado con id " + id));
     }
 
-<<<<<<< HEAD
     private PerfilResponseDTO aDto(Perfil p) {
         return new PerfilResponseDTO(p.getId(), p.getNombre(), p.getApellido(), p.getBio(),
                 p.getUsuario().getId(), p.getUsuario().getNombreuser());
     }
 }
-=======
     private void validarNombreUnico(String nombre, Long exceptoId) {
         datos.values().stream()
                 .filter(p -> p.nombre().equalsIgnoreCase(nombre))
@@ -86,5 +83,4 @@ public class PerfilService {
                     throw new IllegalArgumentException("Ya existe un perfil con el nombre " + nombre);
                 });
     }
-}
->>>>>>> c941d9769e25da0beb4b0ae1a46f61ac155acdec
+

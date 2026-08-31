@@ -82,6 +82,16 @@ public class UsuarioService {
                 });
     }
 
+    private void validarEmailUnico(String email, Long exceptoId) {
+        datos.values().stream()
+                .filter(u -> u.email().equalsIgnoreCase(email))
+                .filter(u -> exceptoId == null || !u.id().equals(exceptoId))
+                .findFirst()
+                .ifPresent(u -> {
+                    throw new IllegalArgumentException("Ya existe un usuario con el email " + email);
+                });
+    }
+
     private UsuarioResponseDTO aDto(Usuario u) {
         return new UsuarioResponseDTO(u.getId(), u.getNombreuser(), u.getEmail(), u.getTelefono(), u.getRol());
     }
