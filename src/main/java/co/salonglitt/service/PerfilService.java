@@ -2,70 +2,63 @@ package co.salonglitt.service;
 
 import co.salonglitt.dto.PerfilRequestDTO;
 import co.salonglitt.dto.PerfilResponseDTO;
+import co.salonglitt.entity.Perfil;
 import co.salonglitt.exception.NotFoundException;
+import co.salonglitt.repository.PerfilRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class PerfilService {
 
-    private record Perfil(Long id, String nombre, String descripcion) {
+    private final PerfilRepository perfilRepository;
+
+    public PerfilService(PerfilRepository perfilRepository) {
+        this.perfilRepository = perfilRepository;
     }
 
-    private final Map<Long, Perfil> datos = new ConcurrentHashMap<>();
-    private final AtomicLong secuencia = new AtomicLong();
-
     public List<PerfilResponseDTO> findAll() {
-        return datos.values().stream()
-                .map(p -> new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion()))
-                .toList();
+        return perfilRepository.findAll().stream().map(this::aDto).toList();
     }
 
     public PerfilResponseDTO findById(Long id) {
-        Perfil p = obtener(id);
-        return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
+        return aDto(obtener(id));
     }
 
     public PerfilResponseDTO create(PerfilRequestDTO dto) {
         validarNombreUnico(dto.nombre().trim(), null);
-        long id = secuencia.incrementAndGet();
-        Perfil p = new Perfil(id, dto.nombre().trim(), dto.descripcion());
-        datos.put(id, p);
-        return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
+        Perfil p = new Perfil(dto.nombre().trim(), dto.descripcion());
+        return aDto(perfilRepository.save(p));
     }
 
     public PerfilResponseDTO update(Long id, PerfilRequestDTO dto) {
         Perfil actual = obtener(id);
         validarNombreUnico(dto.nombre().trim(), id);
-        Perfil p = new Perfil(actual.id(), dto.nombre().trim(), dto.descripcion());
-        datos.put(id, p);
-        return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
+        actual.setNombre(dto.nombre().trim());
+        actual.setDescripcion(dto.descripcion());
+        return aDto(perfilRepository.save(actual));
     }
 
     public void delete(Long id) {
         obtener(id);
-        datos.remove(id);
+        perfilRepository.deleteById(id);
     }
 
     private Perfil obtener(Long id) {
-        Perfil p = datos.get(id);
-        if (p == null) {
-            throw new NotFoundException("Perfil no encontrado con id " + id);
-        }
-        return p;
+        return perfilRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Perfil no encontrado con id " + id));
     }
 
     private void validarNombreUnico(String nombre, Long exceptoId) {
-        datos.values().stream()
-                .filter(p -> p.nombre().equalsIgnoreCase(nombre))
-                .filter(p -> exceptoId == null || !p.id().equals(exceptoId))
-                .findFirst()
+        perfilRepository.findByNombreIgnoreCase(nombre)
+                .filter(p -> exceptoId == null || !p.getId().equals(exceptoId))
                 .ifPresent(p -> {
                     throw new IllegalArgumentException("Ya existe un perfil con el nombre " + nombre);
                 });
+    }
+
+    private PerfilResponseDTO aDto(Perfil p) {
+        return new PerfilResponseDTO(p.getId(), p.getNombre(), p.getDescripcion());
     }
 }
