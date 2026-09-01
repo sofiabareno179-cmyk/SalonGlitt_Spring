@@ -1,6 +1,11 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "perfiles")
@@ -8,35 +13,27 @@ public class Perfil {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, length = 50)
     private String nombre;
 
-    private String apellido;
-
-    @Column(columnDefinition = "text")
-    private String bio;
-
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "idusuario", nullable = false)
-    private Usuario usuario;
+    @Column(length = 200)
+    private String descripcion;
 
     public Perfil() {
     }
 
-    public Perfil(String nombre, String apellido, String bio, Usuario usuario) {
+    public Perfil(String nombre, String descripcion) {
         this.nombre = nombre;
-        this.apellido = apellido;
-        this.bio = bio;
-        this.usuario = usuario;
+        this.descripcion = descripcion;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -48,27 +45,11 @@ public class Perfil {
         this.nombre = nombre;
     }
 
-    public String getApellido() {
-        return apellido;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

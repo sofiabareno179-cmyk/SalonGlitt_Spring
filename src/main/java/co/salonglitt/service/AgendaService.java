@@ -6,19 +6,21 @@ import co.salonglitt.entity.Agenda;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.AgendaRepository;
+import co.salonglitt.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class AgendaService {
 
     private final AgendaRepository agendaRepository;
-    private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
 
-    public AgendaService(AgendaRepository agendaRepository, UsuarioService usuarioService) {
+    public AgendaService(AgendaRepository agendaRepository, UsuarioRepository usuarioRepository) {
         this.agendaRepository = agendaRepository;
-        this.usuarioService = usuarioService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public List<AgendaResponseDTO> findAll() {
@@ -29,38 +31,57 @@ public class AgendaService {
         return aDto(obtener(id));
     }
 
+    public List<AgendaResponseDTO> findByEstilista(Long estilistaId) {
+        validarEstilista(estilistaId);
+        return agendaRepository.findByEstilistaId(estilistaId).stream().map(this::aDto).toList();
+    }
+
+    public List<AgendaResponseDTO> findByEstilistaYFecha(Long estilistaId, LocalDate fecha) {
+        validarEstilista(estilistaId);
+        return agendaRepository.findByEstilistaIdAndFecha(estilistaId, fecha).stream().map(this::aDto).toList();
+    }
+
     public AgendaResponseDTO create(AgendaRequestDTO dto) {
-        Usuario usuario = validarUsuario(dto.usuarioId());
-        Agenda a = new Agenda(dto.diasemana().trim(), dto.horainicio().trim(), dto.horafin().trim(), usuario);
+        if (!dto.horaFin().isAfter(dto.horaInicio())) {
+            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
+        }
+        var estilista = validarEstilista(dto.estilistaId());
+        Agenda a = new Agenda(estilista, dto.fecha(), dto.horaInicio(), dto.horaFin(),
+                dto.disponible() == null || dto.disponible());
         return aDto(agendaRepository.save(a));
     }
 
-    public AgendaResponseDTO update(Integer id, AgendaRequestDTO dto) {
+    public AgendaResponseDTO update(Long id, AgendaRequestDTO dto) {
         Agenda actual = obtener(id);
-        Usuario usuario = validarUsuario(dto.usuarioId());
-        actual.setDiasemana(dto.diasemana().trim());
-        actual.setHorainicio(dto.horainicio().trim());
-        actual.setHorafin(dto.horafin().trim());
-        actual.setUsuario(usuario);
+        if (!dto.horaFin().isAfter(dto.horaInicio())) {
+            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
+        }
+        var estilista = validarEstilista(dto.estilistaId());
+        actual.setEstilista(estilista);
+        actual.setFecha(dto.fecha());
+        actual.setHoraInicio(dto.horaInicio());
+        actual.setHoraFin(dto.horaFin());
+        actual.setDisponible(dto.disponible() == null || dto.disponible());
         return aDto(agendaRepository.save(actual));
     }
 
-    public void delete(Integer id) {
-        Agenda a = obtener(id);
-        agendaRepository.delete(a);
+    public void delete(Long id) {
+        obtener(id);
+        agendaRepository.deleteById(id);
     }
 
-    private Agenda obtener(Integer id) {
+    private Agenda obtener(Long id) {
         return agendaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Bloque de agenda no encontrado con id " + id));
     }
 
-    private Usuario validarUsuario(Integer usuarioId) {
-        return usuarioService.obtener(usuarioId);
+    private Usuario validarEstilista(Long estilistaId) {
+        return usuarioRepository.findById(estilistaId)
+                .orElseThrow(() -> new NotFoundException("Estilista no encontrado con id " + estilistaId));
     }
 
     private AgendaResponseDTO aDto(Agenda a) {
-        return new AgendaResponseDTO(a.getId(), a.getDiasemana(), a.getHorainicio(), a.getHorafin(),
-                a.getUsuario().getId(), a.getUsuario().getNombreuser());
+        return new AgendaResponseDTO(a.getId(), a.getEstilista().getId(), a.getEstilista().getNombre(),
+                a.getFecha(), a.getHoraInicio(), a.getHoraFin(), a.isDisponible());
     }
 }

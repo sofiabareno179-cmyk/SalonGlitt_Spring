@@ -2,46 +2,42 @@ package co.salonglitt.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "usuarios")
-public class Usuario {
+@Table(name = "proveedores")
+public class Proveedor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 120)
+    @Column(nullable = false, length = 150)
     private String nombre;
-
-    @Column(nullable = false, unique = true, length = 120)
-    private String email;
 
     @Column(length = 30)
     private String telefono;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "perfil_id", nullable = false)
-    private Perfil perfil;
+    @Column(length = 150)
+    private String email;
+
+    @Column(length = 250)
+    private String direccion;
 
     @Column(nullable = false)
     private boolean activo = true;
 
-    public Usuario() {
+    public Proveedor() {
     }
 
-    public Usuario(String nombre, String email, String telefono, Perfil perfil, boolean activo) {
+    public Proveedor(String nombre, String telefono, String email, String direccion, boolean activo) {
         this.nombre = nombre;
-        this.email = email;
         this.telefono = telefono;
-        this.perfil = perfil;
+        this.email = email;
+        this.direccion = direccion;
         this.activo = activo;
     }
 
@@ -61,14 +57,6 @@ public class Usuario {
         this.nombre = nombre;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getTelefono() {
         return telefono;
     }
@@ -77,12 +65,20 @@ public class Usuario {
         this.telefono = telefono;
     }
 
-    public Perfil getPerfil() {
-        return perfil;
+    public String getEmail() {
+        return email;
     }
 
-    public void setPerfil(Perfil perfil) {
-        this.perfil = perfil;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
     }
 
     public boolean isActivo() {

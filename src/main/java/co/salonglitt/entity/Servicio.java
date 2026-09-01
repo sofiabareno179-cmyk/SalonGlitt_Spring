@@ -1,6 +1,12 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 
 @Entity
@@ -9,39 +15,39 @@ public class Servicio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idservicio")
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, length = 120)
     private String nombre;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(length = 300)
+    private String descripcion;
+
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal precio;
 
-    @Column(nullable = false)
-    private String duracion;
+    @Column(name = "duracion_minutos", nullable = false)
+    private Integer duracionMinutos;
 
     @Column(nullable = false)
-    private String categoria;
-
-    private String imagen;
+    private boolean activo = true;
 
     public Servicio() {
     }
 
-    public Servicio(String nombre, BigDecimal precio, String duracion, String categoria, String imagen) {
+    public Servicio(String nombre, String descripcion, BigDecimal precio, Integer duracionMinutos, boolean activo) {
         this.nombre = nombre;
+        this.descripcion = descripcion;
         this.precio = precio;
-        this.duracion = duracion;
-        this.categoria = categoria;
-        this.imagen = imagen;
+        this.duracionMinutos = duracionMinutos;
+        this.activo = activo;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -53,6 +59,14 @@ public class Servicio {
         this.nombre = nombre;
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
     public BigDecimal getPrecio() {
         return precio;
     }
@@ -61,27 +75,19 @@ public class Servicio {
         this.precio = precio;
     }
 
-    public String getDuracion() {
-        return duracion;
+    public Integer getDuracionMinutos() {
+        return duracionMinutos;
     }
 
-    public void setDuracion(String duracion) {
-        this.duracion = duracion;
+    public void setDuracionMinutos(Integer duracionMinutos) {
+        this.duracionMinutos = duracionMinutos;
     }
 
-    public String getCategoria() {
-        return categoria;
+    public boolean isActivo() {
+        return activo;
     }
 
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
-    }
-
-    public String getImagen() {
-        return imagen;
-    }
-
-    public void setImagen(String imagen) {
-        this.imagen = imagen;
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }

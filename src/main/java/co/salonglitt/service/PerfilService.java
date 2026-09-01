@@ -3,7 +3,6 @@ package co.salonglitt.service;
 import co.salonglitt.dto.PerfilRequestDTO;
 import co.salonglitt.dto.PerfilResponseDTO;
 import co.salonglitt.entity.Perfil;
-import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.PerfilRepository;
 import org.springframework.stereotype.Service;
@@ -14,18 +13,16 @@ import java.util.List;
 public class PerfilService {
 
     private final PerfilRepository perfilRepository;
-    private final UsuarioService usuarioService;
 
-    public PerfilService(PerfilRepository perfilRepository, UsuarioService usuarioService) {
+    public PerfilService(PerfilRepository perfilRepository) {
         this.perfilRepository = perfilRepository;
-        this.usuarioService = usuarioService;
     }
 
     public List<PerfilResponseDTO> findAll() {
         return perfilRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public PerfilResponseDTO findById(Integer id) {
+    public PerfilResponseDTO findById(Long id) {
         return aDto(obtener(id));
     }
 
@@ -36,11 +33,8 @@ public class PerfilService {
         return aDto(perfilRepository.save(p));
 
         validarNombreUnico(dto.nombre().trim(), null);
-        long id = secuencia.incrementAndGet();
-        Perfil p = new Perfil(id, dto.nombre().trim(), dto.descripcion());
-        datos.put(id, p);
-        return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
-
+        Perfil p = new Perfil(dto.nombre().trim(), dto.descripcion());
+        return aDto(perfilRepository.save(p));
     }
 
     public PerfilResponseDTO update(Integer id, PerfilRequestDTO dto) {
@@ -53,18 +47,17 @@ public class PerfilService {
         return aDto(perfilRepository.save(actual));
 
         validarNombreUnico(dto.nombre().trim(), id);
-        Perfil p = new Perfil(actual.id(), dto.nombre().trim(), dto.descripcion());
-        datos.put(id, p);
-        return new PerfilResponseDTO(p.id(), p.nombre(), p.descripcion());
-
+        actual.setNombre(dto.nombre().trim());
+        actual.setDescripcion(dto.descripcion());
+        return aDto(perfilRepository.save(actual));
     }
 
-    public void delete(Integer id) {
-        Perfil p = obtener(id);
-        perfilRepository.delete(p);
+    public void delete(Long id) {
+        obtener(id);
+        perfilRepository.deleteById(id);
     }
 
-    public Perfil obtener(Integer id) {
+    private Perfil obtener(Long id) {
         return perfilRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Perfil no encontrado con id " + id));
     }
@@ -75,12 +68,14 @@ public class PerfilService {
     }
 }
     private void validarNombreUnico(String nombre, Long exceptoId) {
-        datos.values().stream()
-                .filter(p -> p.nombre().equalsIgnoreCase(nombre))
-                .filter(p -> exceptoId == null || !p.id().equals(exceptoId))
-                .findFirst()
+        perfilRepository.findByNombreIgnoreCase(nombre)
+                .filter(p -> exceptoId == null || !p.getId().equals(exceptoId))
                 .ifPresent(p -> {
                     throw new IllegalArgumentException("Ya existe un perfil con el nombre " + nombre);
                 });
     }
 
+    private PerfilResponseDTO aDto(Perfil p) {
+        return new PerfilResponseDTO(p.getId(), p.getNombre(), p.getDescripcion());
+    }
+}

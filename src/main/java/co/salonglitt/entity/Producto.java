@@ -10,38 +10,40 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import java.math.BigDecimal;
+
 @Entity
-@Table(name = "usuarios")
-public class Usuario {
+@Table(name = "productos")
+public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 120)
+    @Column(nullable = false, length = 150)
     private String nombre;
 
-    @Column(nullable = false, unique = true, length = 120)
-    private String email;
+    @Column(length = 300)
+    private String descripcion;
 
-    @Column(length = 30)
-    private String telefono;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal precio;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "perfil_id", nullable = false)
-    private Perfil perfil;
+    @JoinColumn(name = "proveedor_id", nullable = false)
+    private Proveedor proveedor;
 
     @Column(nullable = false)
     private boolean activo = true;
 
-    public Usuario() {
+    public Producto() {
     }
 
-    public Usuario(String nombre, String email, String telefono, Perfil perfil, boolean activo) {
+    public Producto(String nombre, String descripcion, BigDecimal precio, Proveedor proveedor, boolean activo) {
         this.nombre = nombre;
-        this.email = email;
-        this.telefono = telefono;
-        this.perfil = perfil;
+        this.descripcion = descripcion;
+        this.precio = precio;
+        this.proveedor = proveedor;
         this.activo = activo;
     }
 
@@ -61,28 +63,28 @@ public class Usuario {
         this.nombre = nombre;
     }
 
-    public String getEmail() {
-        return email;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
-    public String getTelefono() {
-        return telefono;
+    public BigDecimal getPrecio() {
+        return precio;
     }
 
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
+    public void setPrecio(BigDecimal precio) {
+        this.precio = precio;
     }
 
-    public Perfil getPerfil() {
-        return perfil;
+    public Proveedor getProveedor() {
+        return proveedor;
     }
 
-    public void setPerfil(Perfil perfil) {
-        this.perfil = perfil;
+    public void setProveedor(Proveedor proveedor) {
+        this.proveedor = proveedor;
     }
 
     public boolean isActivo() {
