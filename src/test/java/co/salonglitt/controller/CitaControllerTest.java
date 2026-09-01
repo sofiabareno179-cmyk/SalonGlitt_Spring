@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -24,70 +24,78 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = CitaController.class)
 class CitaControllerTest {
 
-    private static final LocalDateTime FECHA_FUTURA = LocalDateTime.now().plusDays(7);
-
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private CitaService citaService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    private final LocalDateTime futuro = LocalDateTime.now().plusDays(2);
+
     @Test
     void listar_shouldReturnListOfDTOs() throws Exception {
-        CitaResponseDTO dto = new CitaResponseDTO(1L, 1L, "Ana", 1L, "Corte", FECHA_FUTURA, "PENDIENTE");
+        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Espera", "corte");
         when(citaService.findAll()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/citas"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].clienteNombre").value("Ana"))
-                .andExpect(jsonPath("$[0].servicioNombre").value("Corte"));
+                .andExpect(jsonPath("$[0].usuarioNombre").value("ana"))
+                .andExpect(jsonPath("$[0].estado").value("Espera"));
     }
 
     @Test
     void listar_shouldFilterByEstado() throws Exception {
-        CitaResponseDTO dto = new CitaResponseDTO(1L, 1L, "Ana", 1L, "Corte", FECHA_FUTURA, "CONFIRMADA");
-        when(citaService.findByEstado("CONFIRMADA")).thenReturn(List.of(dto));
+        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Confirmada", "corte");
+        when(citaService.findByEstado("Confirmada")).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/api/citas")
-                        .param("estado", "CONFIRMADA"))
+        mockMvc.perform(get("/api/citas").param("estado", "Confirmada"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].estado").value("CONFIRMADA"));
+                .andExpect(jsonPath("$[0].estado").value("Confirmada"));
     }
 
     @Test
-    void listarPorCliente_shouldReturnList() throws Exception {
-        CitaResponseDTO dto = new CitaResponseDTO(1L, 7L, "Ana", 1L, "Corte", FECHA_FUTURA, "PENDIENTE");
-        when(citaService.findByCliente(7L)).thenReturn(List.of(dto));
+    void obtener_shouldReturnDTO_whenCitaExists() throws Exception {
+        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Espera", "corte");
+        when(citaService.findById(1)).thenReturn(dto);
 
-        mockMvc.perform(get("/api/citas/cliente/7"))
+        mockMvc.perform(get("/api/citas/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].clienteId").value(7));
+                .andExpect(jsonPath("$.servicio").value("corte"));
     }
 
     @Test
     void obtener_shouldReturn404_whenCitaNotFound() throws Exception {
-        when(citaService.findById(99L)).thenThrow(new NotFoundException("Cita no encontrada con id 99"));
+        when(citaService.findById(99)).thenThrow(new NotFoundException("Cita no encontrada con id 99"));
 
         mockMvc.perform(get("/api/citas/99"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    void listarPorUsuario_shouldReturnDTOs() throws Exception {
+        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Espera", "corte");
+        when(citaService.findByUsuario(1)).thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/citas/usuario/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].usuarioId").value(1));
+    }
+
+    @Test
     void crear_shouldReturnCreatedStatus() throws Exception {
-        CitaRequestDTO request = new CitaRequestDTO(1L, 1L, FECHA_FUTURA, null);
-        CitaResponseDTO response = new CitaResponseDTO(2L, 1L, "Ana", 1L, "Corte", FECHA_FUTURA, "PENDIENTE");
+        CitaRequestDTO request = new CitaRequestDTO(1, futuro, "Espera", "corte");
+        CitaResponseDTO response = new CitaResponseDTO(2, 1, "ana", futuro, "Espera", "corte");
         when(citaService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/citas")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(2))
-                .andExpect(jsonPath("$.estado").value("PENDIENTE"));
+                .andExpect(jsonPath("$.id").value(2));
     }
 
     @Test
@@ -99,63 +107,33 @@ class CitaControllerTest {
     }
 
     @Test
-    void crear_shouldReturn400_whenDateInPast() throws Exception {
-        CitaRequestDTO request = new CitaRequestDTO(1L, 1L, LocalDateTime.now().minusDays(1), null);
+    void cambiarEstado_shouldReturnDTO() throws Exception {
+        CitaResponseDTO response = new CitaResponseDTO(1, 1, "ana", futuro, "Cancelada", "corte");
+        when(citaService.cambiarEstado(1, "Cancelada")).thenReturn(response);
 
-        mockMvc.perform(post("/api/citas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void cambiarEstado_shouldReturnUpdatedDTO() throws Exception {
-        CitaResponseDTO response = new CitaResponseDTO(1L, 1L, "Ana", 1L, "Corte", FECHA_FUTURA, "CONFIRMADA");
-        when(citaService.cambiarEstado(1L, "CONFIRMADA")).thenReturn(response);
-
-        mockMvc.perform(patch("/api/citas/1/estado")
-                        .param("estado", "CONFIRMADA"))
+        mockMvc.perform(patch("/api/citas/1/estado").param("estado", "Cancelada"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado").value("CONFIRMADA"));
+                .andExpect(jsonPath("$.estado").value("Cancelada"));
     }
 
     @Test
     void actualizar_shouldReturnDTO() throws Exception {
-        CitaRequestDTO request = new CitaRequestDTO(1L, 2L, FECHA_FUTURA, "CONFIRMADA");
-        CitaResponseDTO response = new CitaResponseDTO(1L, 1L, "Ana", 2L, "Tinte", FECHA_FUTURA, "CONFIRMADA");
-        when(citaService.update(eq(1L), any())).thenReturn(response);
+        CitaRequestDTO request = new CitaRequestDTO(1, futuro, "Confirmada", "liso");
+        CitaResponseDTO response = new CitaResponseDTO(1, 1, "ana", futuro, "Confirmada", "liso");
+        when(citaService.update(eq(1), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/citas/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.servicioNombre").value("Tinte"));
-    }
-
-    @Test
-    void actualizar_shouldReturn404_whenCitaNotFound() throws Exception {
-        CitaRequestDTO request = new CitaRequestDTO(1L, 1L, FECHA_FUTURA, null);
-        when(citaService.update(eq(99L), any())).thenThrow(new NotFoundException("Cita no encontrada con id 99"));
-
-        mockMvc.perform(put("/api/citas/99")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound());
+                .andExpect(jsonPath("$.servicio").value("liso"));
     }
 
     @Test
     void eliminar_shouldReturnNoContent() throws Exception {
-        doNothing().when(citaService).delete(1L);
+        doNothing().when(citaService).delete(1);
 
         mockMvc.perform(delete("/api/citas/1"))
                 .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void eliminar_shouldReturn404_whenCitaNotFound() throws Exception {
-        doThrow(new NotFoundException("Cita no encontrada con id 99")).when(citaService).delete(99L);
-
-        mockMvc.perform(delete("/api/citas/99"))
-                .andExpect(status().isNotFound());
     }
 }

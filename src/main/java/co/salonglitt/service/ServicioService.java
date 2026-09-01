@@ -22,7 +22,7 @@ public class ServicioService {
         return servicioRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public ServicioResponseDTO findById(Long id) {
+    public ServicioResponseDTO findById(Integer id) {
         return aDto(obtener(id));
     }
 
@@ -32,7 +32,7 @@ public class ServicioService {
         return aDto(servicioRepository.save(s));
     }
 
-    public ServicioResponseDTO update(Long id, ServicioRequestDTO dto) {
+    public ServicioResponseDTO update(Integer id, ServicioRequestDTO dto) {
         Servicio actual = obtener(id);
         actual.setNombre(dto.nombre().trim());
         actual.setDescripcion(dto.descripcion());

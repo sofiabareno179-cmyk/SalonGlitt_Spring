@@ -1,98 +1,76 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "agendas")
+@Table(name = "agenda")
 public class Agenda {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idagenda")
+    private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "estilista_id", nullable = false)
-    private Usuario estilista;
+    @Column(name = "diasemana", nullable = false)
+    private String diasemana;
 
-    @Column(nullable = false)
-    private LocalDate fecha;
+    @Column(name = "horainicio", nullable = false)
+    private String horainicio;
 
-    @Column(name = "hora_inicio", nullable = false)
-    private LocalTime horaInicio;
+    @Column(name = "horafin", nullable = false)
+    private String horafin;
 
-    @Column(name = "hora_fin", nullable = false)
-    private LocalTime horaFin;
-
-    @Column(nullable = false)
-    private boolean disponible = true;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "idusuario", nullable = false)
+    private Usuario usuario;
 
     public Agenda() {
     }
 
-    public Agenda(Usuario estilista, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, boolean disponible) {
-        this.estilista = estilista;
-        this.fecha = fecha;
-        this.horaInicio = horaInicio;
-        this.horaFin = horaFin;
-        this.disponible = disponible;
+    public Agenda(String diasemana, String horainicio, String horafin, Usuario usuario) {
+        this.diasemana = diasemana;
+        this.horainicio = horainicio;
+        this.horafin = horafin;
+        this.usuario = usuario;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Usuario getEstilista() {
-        return estilista;
+    public String getDiasemana() {
+        return diasemana;
     }
 
-    public void setEstilista(Usuario estilista) {
-        this.estilista = estilista;
+    public void setDiasemana(String diasemana) {
+        this.diasemana = diasemana;
     }
 
-    public LocalDate getFecha() {
-        return fecha;
+    public String getHorainicio() {
+        return horainicio;
     }
 
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
+    public void setHorainicio(String horainicio) {
+        this.horainicio = horainicio;
     }
 
-    public LocalTime getHoraInicio() {
-        return horaInicio;
+    public String getHorafin() {
+        return horafin;
     }
 
-    public void setHoraInicio(LocalTime horaInicio) {
-        this.horaInicio = horaInicio;
+    public void setHorafin(String horafin) {
+        this.horafin = horafin;
     }
 
-    public LocalTime getHoraFin() {
-        return horaFin;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setHoraFin(LocalTime horaFin) {
-        this.horaFin = horaFin;
-    }
-
-    public boolean isDisponible() {
-        return disponible;
-    }
-
-    public void setDisponible(boolean disponible) {
-        this.disponible = disponible;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }

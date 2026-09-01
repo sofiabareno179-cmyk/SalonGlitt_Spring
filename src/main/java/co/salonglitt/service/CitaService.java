@@ -37,7 +37,7 @@ public class CitaService {
         return citaRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public CitaResponseDTO findById(Long id) {
+    public CitaResponseDTO findById(Integer id) {
         return aDto(obtener(id));
     }
 
@@ -60,7 +60,7 @@ public class CitaService {
         return aDto(citaRepository.save(c));
     }
 
-    public CitaResponseDTO update(Long id, CitaRequestDTO dto) {
+    public CitaResponseDTO update(Integer id, CitaRequestDTO dto) {
         Cita actual = obtener(id);
         var cliente = obtenerCliente(dto.clienteId());
         var servicio = obtenerServicio(dto.servicioId());
@@ -71,7 +71,7 @@ public class CitaService {
         return aDto(citaRepository.save(actual));
     }
 
-    public CitaResponseDTO cambiarEstado(Long id, String estado) {
+    public CitaResponseDTO cambiarEstado(Integer id, String estado) {
         Cita actual = obtener(id);
         actual.setEstado(resolverEstado(estado));
         return aDto(citaRepository.save(actual));
@@ -98,6 +98,8 @@ public class CitaService {
     }
 
     private String resolverEstado(String estado) {
+
+        return (estado == null || estado.isBlank()) ? ESTADO_POR_DEFECTO : estado.trim();
         if (estado == null || estado.isBlank()) {
             return ESTADO_POR_DEFECTO;
         }
@@ -107,6 +109,7 @@ public class CitaService {
                     + ". Permitidos: " + String.join(", ", ESTADOS_VALIDOS));
         }
         return normalizado;
+
     }
 
     private CitaResponseDTO aDto(Cita c) {

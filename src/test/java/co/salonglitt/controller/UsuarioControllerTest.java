@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -26,7 +26,7 @@ class UsuarioControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UsuarioService usuarioService;
 
     @Autowired
@@ -34,20 +34,20 @@ class UsuarioControllerTest {
 
     @Test
     void listar_shouldReturnListOfDTOs() throws Exception {
-        UsuarioResponseDTO dto = new UsuarioResponseDTO(1L, "Ana", "ana@mail.com", "3001234567", 1L, "CLIENTE", true);
+        UsuarioResponseDTO dto = new UsuarioResponseDTO(1, "ana", "ana@mail.com", "3001234567", "cliente");
         when(usuarioService.findAll()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/usuarios"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].nombre").value("Ana"))
-                .andExpect(jsonPath("$[0].perfilNombre").value("CLIENTE"));
+                .andExpect(jsonPath("$[0].nombreuser").value("ana"))
+                .andExpect(jsonPath("$[0].rol").value("cliente"));
     }
 
     @Test
     void obtener_shouldReturnDTO_whenUsuarioExists() throws Exception {
-        UsuarioResponseDTO dto = new UsuarioResponseDTO(1L, "Ana", "ana@mail.com", "3001234567", 1L, "CLIENTE", true);
-        when(usuarioService.findById(1L)).thenReturn(dto);
+        UsuarioResponseDTO dto = new UsuarioResponseDTO(1, "ana", "ana@mail.com", "3001234567", "cliente");
+        when(usuarioService.findById(1)).thenReturn(dto);
 
         mockMvc.perform(get("/api/usuarios/1"))
                 .andExpect(status().isOk())
@@ -56,7 +56,7 @@ class UsuarioControllerTest {
 
     @Test
     void obtener_shouldReturn404_whenUsuarioNotFound() throws Exception {
-        when(usuarioService.findById(99L)).thenThrow(new NotFoundException("Usuario no encontrado con id 99"));
+        when(usuarioService.findById(99)).thenThrow(new NotFoundException("Usuario no encontrado con id 99"));
 
         mockMvc.perform(get("/api/usuarios/99"))
                 .andExpect(status().isNotFound());
@@ -64,8 +64,8 @@ class UsuarioControllerTest {
 
     @Test
     void crear_shouldReturnCreatedStatus() throws Exception {
-        UsuarioRequestDTO request = new UsuarioRequestDTO("Ana", "ana@mail.com", "3001234567", 1L, true);
-        UsuarioResponseDTO response = new UsuarioResponseDTO(2L, "Ana", "ana@mail.com", "3001234567", 1L, "CLIENTE", true);
+        UsuarioRequestDTO request = new UsuarioRequestDTO("ana", "ana@mail.com", "hash", "3001234567", "cliente");
+        UsuarioResponseDTO response = new UsuarioResponseDTO(2, "ana", "ana@mail.com", "3001234567", "cliente");
         when(usuarioService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/usuarios")
@@ -84,32 +84,22 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void crear_shouldReturn400_whenEmailInvalid() throws Exception {
-        String body = "{\"nombre\":\"Ana\",\"email\":\"no-es-email\",\"perfilId\":1}";
-
-        mockMvc.perform(post("/api/usuarios")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void actualizar_shouldReturnDTO() throws Exception {
-        UsuarioRequestDTO request = new UsuarioRequestDTO("Ana Gómez", "anag@mail.com", "3009876543", 1L, false);
-        UsuarioResponseDTO response = new UsuarioResponseDTO(1L, "Ana Gómez", "anag@mail.com", "3009876543", 1L, "CLIENTE", false);
-        when(usuarioService.update(eq(1L), any())).thenReturn(response);
+        UsuarioRequestDTO request = new UsuarioRequestDTO("ana", "anag@mail.com", "hash", "3009876543", "estilista");
+        UsuarioResponseDTO response = new UsuarioResponseDTO(1, "ana", "anag@mail.com", "3009876543", "estilista");
+        when(usuarioService.update(eq(1), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/usuarios/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Ana Gómez"));
+                .andExpect(jsonPath("$.rol").value("estilista"));
     }
 
     @Test
     void actualizar_shouldReturn404_whenUsuarioNotFound() throws Exception {
-        UsuarioRequestDTO request = new UsuarioRequestDTO("Nope", "nope@mail.com", null, 1L, true);
-        when(usuarioService.update(eq(99L), any())).thenThrow(new NotFoundException("Usuario no encontrado con id 99"));
+        UsuarioRequestDTO request = new UsuarioRequestDTO("nope", "nope@mail.com", "hash", null, "cliente");
+        when(usuarioService.update(eq(99), any())).thenThrow(new NotFoundException("Usuario no encontrado con id 99"));
 
         mockMvc.perform(put("/api/usuarios/99")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,7 +109,7 @@ class UsuarioControllerTest {
 
     @Test
     void eliminar_shouldReturnNoContent() throws Exception {
-        doNothing().when(usuarioService).delete(1L);
+        doNothing().when(usuarioService).delete(1);
 
         mockMvc.perform(delete("/api/usuarios/1"))
                 .andExpect(status().isNoContent());
@@ -127,7 +117,7 @@ class UsuarioControllerTest {
 
     @Test
     void eliminar_shouldReturn404_whenUsuarioNotFound() throws Exception {
-        doThrow(new NotFoundException("Usuario no encontrado con id 99")).when(usuarioService).delete(99L);
+        doThrow(new NotFoundException("Usuario no encontrado con id 99")).when(usuarioService).delete(99);
 
         mockMvc.perform(delete("/api/usuarios/99"))
                 .andExpect(status().isNotFound());

@@ -1,6 +1,6 @@
 #run-dev.ps1
 param(
-    [string]$Port = "8080"
+    [string]$Port = "8081"
 )
 
 $ErrorActionPreference = "Stop"
@@ -10,11 +10,16 @@ if (-not $env:JAVA_HOME) {
         Sort-Object Name -Descending | Select-Object -First 1
     if ($jdk) {
         $env:JAVA_HOME = $jdk.FullName
+        [System.Environment]::SetEnvironmentVariable('JAVA_HOME', $jdk.FullName, 'User')
         Write-Host "JAVA_HOME establecido en: $($jdk.FullName)" -ForegroundColor Yellow
     } else {
         Write-Host "ERROR: No se encontró JDK en C:\Program Files\Java" -ForegroundColor Red
         exit 1
     }
+}
+
+if (-not (($env:Path -split ';') -contains "$($env:JAVA_HOME)\bin")) {
+    $env:Path = "$($env:JAVA_HOME)\bin;$($env:Path)"
 }
 
 if (-not (Test-Path -LiteralPath ".env")) {

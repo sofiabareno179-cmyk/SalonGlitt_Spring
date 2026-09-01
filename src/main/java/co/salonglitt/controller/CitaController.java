@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/citas")
-@Tag(name = "Citas", description = "Relación N:N entre Usuarios (clientes) y Servicios")
+@Tag(name = "Citas", description = "Citas agendadas por los usuarios")
 public class CitaController {
 
     private final CitaService citaService;
@@ -24,41 +24,41 @@ public class CitaController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar citas", description = "Retorna todas las citas con cliente y servicio. Filtra opcionalmente por estado")
+    @Operation(summary = "Listar citas", description = "Retorna todas las citas. Filtra opcionalmente por estado")
     public List<CitaResponseDTO> listar(@RequestParam(required = false) String estado) {
         return estado == null ? citaService.findAll() : citaService.findByEstado(estado);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener cita por ID")
-    public CitaResponseDTO obtener(@PathVariable Long id) { return citaService.findById(id); }
+    public CitaResponseDTO obtener(@PathVariable Integer id) { return citaService.findById(id); }
 
-    @GetMapping("/cliente/{clienteId}")
-    @Operation(summary = "Listar citas por cliente")
-    public List<CitaResponseDTO> listarPorCliente(@PathVariable Long clienteId) {
-        return citaService.findByCliente(clienteId);
+    @GetMapping("/usuario/{usuarioId}")
+    @Operation(summary = "Listar citas por usuario")
+    public List<CitaResponseDTO> listarPorUsuario(@PathVariable Integer usuarioId) {
+        return citaService.findByUsuario(usuarioId);
     }
 
     @PostMapping
-    @Operation(summary = "Crear cita", description = "El cliente y el servicio deben existir. Estado por defecto: PENDIENTE")
+    @Operation(summary = "Crear cita", description = "El usuario debe existir. Estado por defecto: Espera")
     public ResponseEntity<CitaResponseDTO> crear(@Valid @RequestBody CitaRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(citaService.create(dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @Operation(summary = "Cambiar estado de la cita", description = "Estados: PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA")
-    public CitaResponseDTO cambiarEstado(@PathVariable Long id, @RequestParam String estado) {
+    @Operation(summary = "Cambiar estado de la cita", description = "Ej. Confirmada, Espera, Cancelada")
+    public CitaResponseDTO cambiarEstado(@PathVariable Integer id, @RequestParam String estado) {
         return citaService.cambiarEstado(id, estado);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar cita")
-    public CitaResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody CitaRequestDTO dto) {
+    public CitaResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody CitaRequestDTO dto) {
         return citaService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar cita")
-    public void eliminar(@PathVariable Long id) { citaService.delete(id); }
+    public void eliminar(@PathVariable Integer id) { citaService.delete(id); }
 }

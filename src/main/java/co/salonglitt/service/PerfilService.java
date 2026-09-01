@@ -27,13 +27,25 @@ public class PerfilService {
     }
 
     public PerfilResponseDTO create(PerfilRequestDTO dto) {
+
+        Usuario usuario = usuarioService.obtener(dto.usuarioId());
+        Perfil p = new Perfil(dto.nombre().trim(), dto.apellido(), dto.bio(), usuario);
+        return aDto(perfilRepository.save(p));
+
         validarNombreUnico(dto.nombre().trim(), null);
         Perfil p = new Perfil(dto.nombre().trim(), dto.descripcion());
         return aDto(perfilRepository.save(p));
     }
 
-    public PerfilResponseDTO update(Long id, PerfilRequestDTO dto) {
+    public PerfilResponseDTO update(Integer id, PerfilRequestDTO dto) {
         Perfil actual = obtener(id);
+        Usuario usuario = usuarioService.obtener(dto.usuarioId());
+        actual.setNombre(dto.nombre().trim());
+        actual.setApellido(dto.apellido());
+        actual.setBio(dto.bio());
+        actual.setUsuario(usuario);
+        return aDto(perfilRepository.save(actual));
+
         validarNombreUnico(dto.nombre().trim(), id);
         actual.setNombre(dto.nombre().trim());
         actual.setDescripcion(dto.descripcion());
@@ -50,6 +62,11 @@ public class PerfilService {
                 .orElseThrow(() -> new NotFoundException("Perfil no encontrado con id " + id));
     }
 
+    private PerfilResponseDTO aDto(Perfil p) {
+        return new PerfilResponseDTO(p.getId(), p.getNombre(), p.getApellido(), p.getBio(),
+                p.getUsuario().getId(), p.getUsuario().getNombreuser());
+    }
+}
     private void validarNombreUnico(String nombre, Long exceptoId) {
         perfilRepository.findByNombreIgnoreCase(nombre)
                 .filter(p -> exceptoId == null || !p.getId().equals(exceptoId))

@@ -32,6 +32,19 @@ public class UsuarioService {
 
     public UsuarioResponseDTO create(UsuarioRequestDTO dto) {
         var perfil = obtenerPerfil(dto.perfilId());
+        Usuario u = new Usuario(dto.nombreuser().trim(), dto.email().trim(),
+                dto.passwordHash(), dto.telefono(), dto.rol().trim());
+        return aDto(usuarioRepository.save(u));
+    }
+
+    public UsuarioResponseDTO update(Integer id, UsuarioRequestDTO dto) {
+        Usuario actual = obtener(id);
+        actual.setNombreuser(dto.nombreuser().trim());
+        actual.setEmail(dto.email().trim());
+        actual.setPasswordHash(dto.passwordHash());
+        actual.setTelefono(dto.telefono());
+        actual.setRol(dto.rol().trim());
+        return aDto(usuarioRepository.save(actual));
         validarEmailUnico(dto.email().trim(), null);
         Usuario u = new Usuario(dto.nombre().trim(), dto.email().trim(), dto.telefono(),
                 perfil, dto.activo() == null || dto.activo());
@@ -63,6 +76,27 @@ public class UsuarioService {
     private Perfil obtenerPerfil(Long id) {
         return perfilRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Perfil no encontrado con id " + id));
+    }
+
+    public void delete(Integer id) {
+        Usuario u = obtener(id);
+        usuarioRepository.delete(u);
+    }
+
+    public Usuario obtener(Integer id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
+    }
+
+    private void validarEmailUnico(String email, Long exceptoId) {
+        datos.values().stream()
+                .filter(u -> u.email().equalsIgnoreCase(email))
+                .filter(u -> exceptoId == null || !u.id().equals(exceptoId))
+                .findFirst()
+                .ifPresent(u -> {
+                    throw new IllegalArgumentException("Ya existe un usuario con el email " + email);
+                });
+
     }
 
     private void validarEmailUnico(String email, Long exceptoId) {

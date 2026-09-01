@@ -27,7 +27,7 @@ public class AgendaService {
         return agendaRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public AgendaResponseDTO findById(Long id) {
+    public AgendaResponseDTO findById(Integer id) {
         return aDto(obtener(id));
     }
 

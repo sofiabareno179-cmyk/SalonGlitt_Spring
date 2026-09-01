@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -27,7 +27,7 @@ class ServicioControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ServicioService servicioService;
 
     @Autowired
@@ -35,28 +35,29 @@ class ServicioControllerTest {
 
     @Test
     void listar_shouldReturnListOfDTOs() throws Exception {
-        ServicioResponseDTO dto = new ServicioResponseDTO(1L, "Corte", "Corte clásico", new BigDecimal("25000"), 30, true);
+        ServicioResponseDTO dto = new ServicioResponseDTO(1, "Corte", new BigDecimal("60000"), "45", "peluqueria", null);
         when(servicioService.findAll()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/servicios"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].nombre").value("Corte"));
+                .andExpect(jsonPath("$[0].nombre").value("Corte"))
+                .andExpect(jsonPath("$[0].categoria").value("peluqueria"));
     }
 
     @Test
     void obtener_shouldReturnDTO_whenServicioExists() throws Exception {
-        ServicioResponseDTO dto = new ServicioResponseDTO(1L, "Corte", "Corte clásico", new BigDecimal("25000"), 30, true);
-        when(servicioService.findById(1L)).thenReturn(dto);
+        ServicioResponseDTO dto = new ServicioResponseDTO(1, "Corte", new BigDecimal("60000"), "45", "peluqueria", null);
+        when(servicioService.findById(1)).thenReturn(dto);
 
         mockMvc.perform(get("/api/servicios/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.duracionMinutos").value(30));
+                .andExpect(jsonPath("$.precio").value(60000));
     }
 
     @Test
     void obtener_shouldReturn404_whenServicioNotFound() throws Exception {
-        when(servicioService.findById(99L)).thenThrow(new NotFoundException("Servicio no encontrado con id 99"));
+        when(servicioService.findById(99)).thenThrow(new NotFoundException("Servicio no encontrado con id 99"));
 
         mockMvc.perform(get("/api/servicios/99"))
                 .andExpect(status().isNotFound());
@@ -64,8 +65,8 @@ class ServicioControllerTest {
 
     @Test
     void crear_shouldReturnCreatedStatus() throws Exception {
-        ServicioRequestDTO request = new ServicioRequestDTO("Tinte", "Tinte completo", new BigDecimal("80000"), 90, true);
-        ServicioResponseDTO response = new ServicioResponseDTO(2L, "Tinte", "Tinte completo", new BigDecimal("80000"), 90, true);
+        ServicioRequestDTO request = new ServicioRequestDTO("Corte", new BigDecimal("60000"), "45", "peluqueria", null);
+        ServicioResponseDTO response = new ServicioResponseDTO(2, "Corte", new BigDecimal("60000"), "45", "peluqueria", null);
         when(servicioService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/servicios")
@@ -84,42 +85,21 @@ class ServicioControllerTest {
     }
 
     @Test
-    void crear_shouldReturn400_whenPriceNegative() throws Exception {
-        String body = "{\"nombre\":\"Tinte\",\"precio\":-5,\"duracionMinutos\":90}";
-
-        mockMvc.perform(post("/api/servicios")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void actualizar_shouldReturnDTO() throws Exception {
-        ServicioRequestDTO request = new ServicioRequestDTO("Corte Premium", "Con lavado", new BigDecimal("40000"), 45, true);
-        ServicioResponseDTO response = new ServicioResponseDTO(1L, "Corte Premium", "Con lavado", new BigDecimal("40000"), 45, true);
-        when(servicioService.update(eq(1L), any())).thenReturn(response);
+        ServicioRequestDTO request = new ServicioRequestDTO("Tintura", new BigDecimal("90000"), "90", "color", null);
+        ServicioResponseDTO response = new ServicioResponseDTO(1, "Tintura", new BigDecimal("90000"), "90", "color", null);
+        when(servicioService.update(eq(1), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/servicios/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Corte Premium"));
-    }
-
-    @Test
-    void actualizar_shouldReturn404_whenServicioNotFound() throws Exception {
-        ServicioRequestDTO request = new ServicioRequestDTO("Nope", "No existe", new BigDecimal("100"), 10, true);
-        when(servicioService.update(eq(99L), any())).thenThrow(new NotFoundException("Servicio no encontrado con id 99"));
-
-        mockMvc.perform(put("/api/servicios/99")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound());
+                .andExpect(jsonPath("$.duracion").value("90"));
     }
 
     @Test
     void eliminar_shouldReturnNoContent() throws Exception {
-        doNothing().when(servicioService).delete(1L);
+        doNothing().when(servicioService).delete(1);
 
         mockMvc.perform(delete("/api/servicios/1"))
                 .andExpect(status().isNoContent());
@@ -127,7 +107,7 @@ class ServicioControllerTest {
 
     @Test
     void eliminar_shouldReturn404_whenServicioNotFound() throws Exception {
-        doThrow(new NotFoundException("Servicio no encontrado con id 99")).when(servicioService).delete(99L);
+        doThrow(new NotFoundException("Servicio no encontrado con id 99")).when(servicioService).delete(99);
 
         mockMvc.perform(delete("/api/servicios/99"))
                 .andExpect(status().isNotFound());

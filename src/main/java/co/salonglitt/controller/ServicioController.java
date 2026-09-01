@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/servicios")
-@Tag(name = "Servicios", description = "Servicios ofrecidos por el salón (corte, tinte, uñas...)")
+@Tag(name = "Servicios", description = "Servicios ofrecidos por el salón")
 public class ServicioController {
 
     private final ServicioService servicioService;
@@ -24,12 +24,12 @@ public class ServicioController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar servicios", description = "Retorna todos los servicios con precio y duración")
+    @Operation(summary = "Listar servicios", description = "Retorna todos los servicios con precio, duración y categoría")
     public List<ServicioResponseDTO> listar() { return servicioService.findAll(); }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener servicio por ID")
-    public ServicioResponseDTO obtener(@PathVariable Long id) { return servicioService.findById(id); }
+    public ServicioResponseDTO obtener(@PathVariable Integer id) { return servicioService.findById(id); }
 
     @PostMapping
     @Operation(summary = "Crear servicio")
@@ -39,12 +39,12 @@ public class ServicioController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar servicio")
-    public ServicioResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody ServicioRequestDTO dto) {
+    public ServicioResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody ServicioRequestDTO dto) {
         return servicioService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar servicio")
-    public void eliminar(@PathVariable Long id) { servicioService.delete(id); }
+    public void eliminar(@PathVariable Integer id) { servicioService.delete(id); }
 }
