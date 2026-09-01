@@ -1,0 +1,13 @@
+package co.salonglitt.repository;
+
+import co.salonglitt.entity.Inventario;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface InventarioRepository extends JpaRepository<Inventario, Long> {
+    Optional<Inventario> findByProductoId(Long productoId);
+
+    List<Inventario> findByCantidadTotalLessThanEqual(Integer stockMinimo);
+}
