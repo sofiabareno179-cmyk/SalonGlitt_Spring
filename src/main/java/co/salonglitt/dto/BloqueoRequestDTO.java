@@ -1,12 +1,14 @@
 package co.salonglitt.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record BloqueoRequestDTO(
-        @NotNull(message = "El estilista es obligatorio") Long estilistaId,
-        @NotNull(message = "La fecha de inicio es obligatoria") LocalDateTime inicio,
-        @NotNull(message = "La fecha de fin es obligatoria") LocalDateTime fin,
+        @NotNull(message = "El usuario es obligatorio") Integer idusuario,
+        @NotNull(message = "La fecha es obligatoria") LocalDate fecha,
+        @NotBlank(message = "La hora de inicio es obligatoria") String horaInicio,
+        @NotBlank(message = "La hora de fin es obligatoria") String horaFin,
         String motivo) {
 }

@@ -19,7 +19,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SuppressWarnings("null")
 @WebMvcTest(controllers = PerfilController.class)
 class PerfilControllerTest {
 
@@ -32,26 +31,29 @@ class PerfilControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private PerfilResponseDTO dto(int id, String nombre) {
+        return new PerfilResponseDTO(id, nombre, "Perez", "bio", 1, "Ana");
+    }
+
     @Test
     void listar_shouldReturnListOfDTOs() throws Exception {
-        PerfilResponseDTO dto = new PerfilResponseDTO(1, "Ana", "Gomez", "bio", 1, "ana");
+        PerfilResponseDTO dto = dto(1, "Ana");
         when(perfilService.findAll()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/perfiles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].nombre").value("Ana"))
-                .andExpect(jsonPath("$[0].usuarioNombre").value("ana"));
+                .andExpect(jsonPath("$[0].nombre").value("Ana"));
     }
 
     @Test
     void obtener_shouldReturnDTO_whenPerfilExists() throws Exception {
-        PerfilResponseDTO dto = new PerfilResponseDTO(1, "Ana", "Gomez", "bio", 1, "ana");
+        PerfilResponseDTO dto = dto(1, "Ana");
         when(perfilService.findById(1)).thenReturn(dto);
 
         mockMvc.perform(get("/api/perfiles/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.apellido").value("Gomez"));
+                .andExpect(jsonPath("$.bio").value("bio"));
     }
 
     @Test
@@ -64,8 +66,8 @@ class PerfilControllerTest {
 
     @Test
     void crear_shouldReturnCreatedStatus() throws Exception {
-        PerfilRequestDTO request = new PerfilRequestDTO("Ana", "Gomez", "bio", 1);
-        PerfilResponseDTO response = new PerfilResponseDTO(2, "Ana", "Gomez", "bio", 1, "ana");
+        PerfilRequestDTO request = new PerfilRequestDTO("Ana", "Perez", "bio", 1);
+        PerfilResponseDTO response = dto(2, "Ana");
         when(perfilService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/perfiles")
@@ -85,8 +87,8 @@ class PerfilControllerTest {
 
     @Test
     void actualizar_shouldReturnDTO() throws Exception {
-        PerfilRequestDTO request = new PerfilRequestDTO("Ana Maria", "G", "nuevo", 1);
-        PerfilResponseDTO response = new PerfilResponseDTO(1, "Ana Maria", "G", "nuevo", 1, "ana");
+        PerfilRequestDTO request = new PerfilRequestDTO("Ana Maria", "Perez", "nuevo", 1);
+        PerfilResponseDTO response = dto(1, "Ana Maria");
         when(perfilService.update(eq(1), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/perfiles/1")

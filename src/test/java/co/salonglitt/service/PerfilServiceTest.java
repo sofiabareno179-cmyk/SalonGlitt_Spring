@@ -6,6 +6,7 @@ import co.salonglitt.entity.Perfil;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.PerfilRepository;
+import co.salonglitt.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,7 +27,7 @@ class PerfilServiceTest {
     private PerfilRepository perfilRepository;
 
     @Mock
-    private UsuarioService usuarioService;
+    private UsuarioRepository usuarioRepository;
 
     @InjectMocks
     private PerfilService service;
@@ -46,7 +47,7 @@ class PerfilServiceTest {
     @Test
     void create_shouldPersistAndReturnDto() {
         Usuario usuario = usuario(1, "ana");
-        when(usuarioService.obtener(1)).thenReturn(usuario);
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
         when(perfilRepository.save(any(Perfil.class))).thenAnswer(inv -> {
             Perfil p = inv.getArgument(0);
             p.setId(1);
@@ -58,7 +59,7 @@ class PerfilServiceTest {
         assertNotNull(created.id());
         assertEquals("Ana", created.nombre());
         assertEquals("Gomez", created.apellido());
-        assertEquals(1, created.usuarioId());
+        assertEquals(1, created.idusuario());
         assertEquals("ana", created.usuarioNombre());
     }
 
@@ -93,7 +94,7 @@ class PerfilServiceTest {
     void update_shouldReplaceProfileData() {
         Usuario usuario = usuario(1, "ana");
         when(perfilRepository.findById(1)).thenReturn(Optional.of(perfil(1, "Ana", usuario)));
-        when(usuarioService.obtener(1)).thenReturn(usuario);
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
         when(perfilRepository.save(any(Perfil.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PerfilResponseDTO updated = service.update(1, new PerfilRequestDTO("Ana Maria", "G", "nueva bio", 1));
@@ -110,7 +111,7 @@ class PerfilServiceTest {
 
         service.delete(1);
 
-        verify(perfilRepository).delete(any(Perfil.class));
+        verify(perfilRepository).deleteById(1);
     }
 
     @Test

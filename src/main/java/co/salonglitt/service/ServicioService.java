@@ -27,33 +27,34 @@ public class ServicioService {
     }
 
     public ServicioResponseDTO create(ServicioRequestDTO dto) {
-        Servicio s = new Servicio(dto.nombre().trim(), dto.descripcion(), dto.precio(),
-                dto.duracionMinutos(), dto.activo() == null || dto.activo());
+        Servicio s = new Servicio(dto.nombre().trim(), dto.precio(), dto.duracion().trim(),
+                dto.categoria().trim(), dto.imagen(), dto.idcitas());
         return aDto(servicioRepository.save(s));
     }
 
     public ServicioResponseDTO update(Integer id, ServicioRequestDTO dto) {
         Servicio actual = obtener(id);
         actual.setNombre(dto.nombre().trim());
-        actual.setDescripcion(dto.descripcion());
         actual.setPrecio(dto.precio());
-        actual.setDuracionMinutos(dto.duracionMinutos());
-        actual.setActivo(dto.activo() == null || dto.activo());
+        actual.setDuracion(dto.duracion().trim());
+        actual.setCategoria(dto.categoria().trim());
+        actual.setImagen(dto.imagen());
+        actual.setIdcitas(dto.idcitas());
         return aDto(servicioRepository.save(actual));
     }
 
-    public void delete(Long id) {
+    public void delete(Integer id) {
         obtener(id);
         servicioRepository.deleteById(id);
     }
 
-    private Servicio obtener(Long id) {
+    private Servicio obtener(Integer id) {
         return servicioRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Servicio no encontrado con id " + id));
     }
 
     private ServicioResponseDTO aDto(Servicio s) {
-        return new ServicioResponseDTO(s.getId(), s.getNombre(), s.getDescripcion(), s.getPrecio(),
-                s.getDuracionMinutos(), s.isActivo());
+        return new ServicioResponseDTO(s.getId(), s.getNombre(), s.getPrecio(),
+                s.getDuracion(), s.getCategoria(), s.getImagen(), s.getIdcitas());
     }
 }

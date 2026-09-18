@@ -1,14 +1,6 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
@@ -18,28 +10,29 @@ public class Notificacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idnotificacion")
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "idusuario", nullable = false)
     private Usuario usuario;
 
     @Column(nullable = false, length = 200)
     private String titulo;
 
-    @Column(nullable = false, length = 500)
+    @Column(length = 500)
     private String mensaje;
 
-    @Column(nullable = false)
-    private boolean leida = false;
+    @Column
+    private Boolean leida;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
 
     public Notificacion() {
     }
 
-    public Notificacion(Usuario usuario, String titulo, String mensaje, boolean leida, LocalDateTime fechaCreacion) {
+    public Notificacion(Usuario usuario, String titulo, String mensaje, Boolean leida, LocalDateTime fechaCreacion) {
         this.usuario = usuario;
         this.titulo = titulo;
         this.mensaje = mensaje;
@@ -47,11 +40,11 @@ public class Notificacion {
         this.fechaCreacion = fechaCreacion == null ? LocalDateTime.now() : fechaCreacion;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -79,11 +72,11 @@ public class Notificacion {
         this.mensaje = mensaje;
     }
 
-    public boolean isLeida() {
+    public Boolean getLeida() {
         return leida;
     }
 
-    public void setLeida(boolean leida) {
+    public void setLeida(Boolean leida) {
         this.leida = leida;
     }
 

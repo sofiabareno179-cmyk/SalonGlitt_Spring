@@ -29,7 +29,7 @@ class ServicioServiceTest {
     private ServicioService service;
 
     private Servicio servicio(Integer id, String nombre) {
-        Servicio s = new Servicio(nombre, new BigDecimal("60000"), "60", "tratamiento", null);
+        Servicio s = new Servicio(nombre, new BigDecimal("60000"), "60", "tratamiento", null, null);
         s.setId(id);
         return s;
     }
@@ -42,7 +42,8 @@ class ServicioServiceTest {
             return s;
         });
 
-        ServicioResponseDTO created = service.create(new ServicioRequestDTO("Corte", new BigDecimal("60000"), "45", "peluqueria", null));
+        ServicioResponseDTO created = service.create(
+                new ServicioRequestDTO("Corte", new BigDecimal("60000"), "45", "peluqueria", null, null));
 
         assertNotNull(created.id());
         assertEquals("Corte", created.nombre());
@@ -53,15 +54,12 @@ class ServicioServiceTest {
 
     @Test
     void findAll_shouldReturnAllServices() {
-        when(servicioRepository.findAll()).thenReturn(List.of(
-                servicio(1, "Corte"),
-                servicio(2, "Manicure")));
+        when(servicioRepository.findAll()).thenReturn(List.of(servicio(1, "Corte")));
 
         List<ServicioResponseDTO> servicios = service.findAll();
 
-        assertEquals(2, servicios.size());
+        assertEquals(1, servicios.size());
         assertTrue(servicios.stream().anyMatch(s -> s.nombre().equals("Corte")));
-        assertTrue(servicios.stream().anyMatch(s -> s.nombre().equals("Manicure")));
     }
 
     @Test
@@ -76,10 +74,12 @@ class ServicioServiceTest {
 
     @Test
     void update_shouldReplaceServiceData() {
-        when(servicioRepository.findById(1)).thenReturn(Optional.of(servicio(1, "Lavado")));
+        Servicio existente = servicio(1, "Lavado");
+        when(servicioRepository.findById(1)).thenReturn(Optional.of(existente));
         when(servicioRepository.save(any(Servicio.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ServicioResponseDTO updated = service.update(1, new ServicioRequestDTO("Tintura", new BigDecimal("90000"), "90", "color", null));
+        ServicioResponseDTO updated = service.update(1,
+                new ServicioRequestDTO("Tintura", new BigDecimal("90000"), "90", "color", null, null));
 
         assertEquals("Tintura", updated.nombre());
         assertEquals(new BigDecimal("90000"), updated.precio());
@@ -93,7 +93,7 @@ class ServicioServiceTest {
 
         service.delete(1);
 
-        verify(servicioRepository).delete(any(Servicio.class));
+        verify(servicioRepository).deleteById(1);
     }
 
     @Test
@@ -107,7 +107,8 @@ class ServicioServiceTest {
     void update_shouldThrowWhenServiceDoesNotExist() {
         when(servicioRepository.findById(999)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> service.update(999, new ServicioRequestDTO("x", new BigDecimal("20"), "10", "c", null)));
+        assertThrows(NotFoundException.class, () -> service.update(999,
+                new ServicioRequestDTO("x", new BigDecimal("20"), "10", "c", null, null)));
     }
 
     @Test

@@ -5,7 +5,8 @@
             "type": "java",
             "name": "Run SalonGlitt (Spring Boot)",
             "request": "launch",
-            "mainClass": "co.salonglitt.SalonGlittApplication"
+            "mainClass": "co.salonglitt.SalonGlittApplication",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

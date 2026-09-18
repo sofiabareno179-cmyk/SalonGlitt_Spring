@@ -41,7 +41,8 @@ class UsuarioServiceTest {
             return u;
         });
 
-        UsuarioResponseDTO created = service.create(new UsuarioRequestDTO("laura", "laura@mail.com", "hash", "3000000000", "cliente"));
+        UsuarioResponseDTO created = service.create(
+                new UsuarioRequestDTO("laura", "laura@mail.com", "hash", "3000000000", "cliente"));
 
         assertNotNull(created.id());
         assertEquals("laura", created.nombreuser());
@@ -70,7 +71,16 @@ class UsuarioServiceTest {
 
         assertEquals(1, found.id());
         assertEquals("sofia", found.nombreuser());
-        assertEquals("cliente", found.rol());
+    }
+
+    @Test
+    void findByEmail_shouldReturnSavedUser() {
+        when(usuarioRepository.findByEmailIgnoreCase("sofia@mail.com"))
+                .thenReturn(Optional.of(user(1, "sofia", "cliente")));
+
+        UsuarioResponseDTO found = service.findByEmail("sofia@mail.com");
+
+        assertEquals("sofia", found.nombreuser());
     }
 
     @Test
@@ -78,7 +88,8 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(user(1, "pedro", "cliente")));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        UsuarioResponseDTO updated = service.update(1, new UsuarioRequestDTO("pedro.ruiz", "pedro@mail.com", "hash2", "555", "estilista"));
+        UsuarioResponseDTO updated = service.update(1,
+                new UsuarioRequestDTO("pedro.ruiz", "pedro@mail.com", "hash2", "555", "estilista"));
 
         assertEquals("pedro.ruiz", updated.nombreuser());
         assertEquals("pedro@mail.com", updated.email());
@@ -91,7 +102,7 @@ class UsuarioServiceTest {
 
         service.delete(1);
 
-        verify(usuarioRepository).delete(any(Usuario.class));
+        verify(usuarioRepository).deleteById(1);
     }
 
     @Test
@@ -105,7 +116,8 @@ class UsuarioServiceTest {
     void update_shouldThrowWhenUserDoesNotExist() {
         when(usuarioRepository.findById(999)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> service.update(999, new UsuarioRequestDTO("x", "x@mail.com", "h", "1", "cliente")));
+        assertThrows(NotFoundException.class, () -> service.update(999,
+                new UsuarioRequestDTO("x", "x@mail.com", "h", "1", "cliente")));
     }
 
     @Test

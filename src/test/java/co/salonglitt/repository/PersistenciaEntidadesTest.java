@@ -20,7 +20,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,51 +55,48 @@ class PersistenciaEntidadesTest {
 
     @Test
     void debieraPersistirTodasLasEntidadesYRelaciones() {
-        Perfil cliente = perfilRepository.save(new Perfil("CLIENTE", "Cliente del salón"));
-        Perfil estilistaPerfil = perfilRepository.save(new Perfil("ESTILISTA", "Estilista"));
+        Usuario clienteU = usuarioRepository.save(new Usuario("Ana", "ana@mail.com", "123", "300111", "cliente"));
+        Usuario estilista = usuarioRepository.save(new Usuario("Laura", "laura@mail.com", "123", "300222", "estilista"));
 
-        Usuario clienteU = usuarioRepository.save(new Usuario("Ana", "ana@mail.com", "300111", cliente, true));
-        Usuario estilista = usuarioRepository.save(new Usuario("Laura", "laura@mail.com", "300222", estilistaPerfil, true));
+        perfilRepository.save(new Perfil("Ana", "Perez", "Cliente del salón", clienteU));
+        perfilRepository.save(new Perfil("Laura", "Gomez", "Estilista", estilista));
 
-        Servicio corte = servicioRepository.save(new Servicio("Corte", "Corte clásico", new BigDecimal("25000"), 30, true));
+        servicioRepository.save(new Servicio("Corte", new BigDecimal("25000"), "45", "peluqueria", null, null));
 
-        Cita cita = citaRepository.save(new Cita(clienteU, corte, LocalDateTime.now().plusDays(5), "PENDIENTE"));
+        citaRepository.save(new Cita(clienteU, LocalDateTime.now().plusDays(5), "PENDIENTE", "Corte"));
 
-        Agenda agenda = agendaRepository.save(new Agenda(estilista, LocalDate.now().plusDays(1),
-                LocalTime.of(9, 0), LocalTime.of(10, 0), true));
+        agendaRepository.save(new Agenda("lunes", "09:00", "14:00", estilista));
 
-        Bloqueo bloqueo = bloqueoRepository.save(new Bloqueo(estilista,
-                LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(2).plusHours(2), "Vacaciones"));
+        bloqueoRepository.save(new Bloqueo(LocalDate.now().plusDays(2), "08:00", "10:00",
+                "Vacaciones", estilista));
 
-        Proveedor proveedor = proveedorRepository.save(new Proveedor("Distribuidora X", "300333", "x@mail.com", "Centro", true));
+        proveedorRepository.save(new Proveedor("Distribuidora X", "Juan Pérez", "300333",
+                "x@mail.com", "Centro"));
 
-        Producto producto = productoRepository.save(new Producto("Shampoo", "Para cabello", new BigDecimal("15000"), proveedor, true));
+        Producto producto = productoRepository.save(new Producto("Shampoo", "Para cabello", 15000.0, "cabello"));
 
-        Inventario inventario = inventarioRepository.save(new Inventario(producto, 20, 5, null));
+        inventarioRepository.save(new Inventario(20, LocalDate.now().toString(), producto, null));
 
-        CatalogoPrecio catalogo = catalogoPrecioRepository.save(new CatalogoPrecio(corte,
-                new BigDecimal("28000"), LocalDate.now(), null));
+        catalogoPrecioRepository.save(new CatalogoPrecio("Corte ejecutivo",
+                "Corte con lavado", 28000.0, "peluqueria"));
 
-        Promocion promocion = promocionRepository.save(new Promocion("2x1 corte", "Verano",
-                corte, null, new BigDecimal("50"), LocalDate.now(), LocalDate.now().plusDays(10), true));
+        promocionRepository.save(new Promocion("2x1 corte", "Verano", true));
 
-        Notificacion notificacion = notificacionRepository.save(new Notificacion(clienteU, "Hola", "Bienvenida", false, null));
+        notificacionRepository.save(new Notificacion(clienteU, "Hola", "Bienvenida", false, null));
 
-        Recordatorio recordatorio = recordatorioRepository.save(new Recordatorio(cita, null, "EMAIL", false));
+        recordatorioRepository.save(new Recordatorio("Tu cita", "Mañana tienes una cita",
+                LocalDate.now().plusDays(1).toString(), clienteU));
 
         assertThat(perfilRepository.findAll()).hasSize(2);
         assertThat(usuarioRepository.findAll()).hasSize(2);
-        assertThat(citaRepository.findByClienteId(clienteU.getId())).hasSize(1);
-        assertThat(agendaRepository.findByEstilistaId(estilista.getId())).hasSize(1);
-        assertThat(bloqueoRepository.findByEstilistaId(estilista.getId())).hasSize(1);
-        assertThat(productoRepository.findByProveedorId(proveedor.getId())).hasSize(1);
+        assertThat(citaRepository.findByUsuarioId(clienteU.getId())).hasSize(1);
+        assertThat(agendaRepository.findByUsuarioId(estilista.getId())).hasSize(1);
+        assertThat(bloqueoRepository.findByUsuarioId(estilista.getId())).hasSize(1);
         assertThat(inventarioRepository.findByProductoId(producto.getId())).isPresent();
-        assertThat(catalogoPrecioRepository.findByServicioId(corte.getId())).hasSize(1);
         assertThat(promocionRepository.findByActivaTrue()).hasSize(1);
         assertThat(notificacionRepository.findByUsuarioIdOrderByFechaCreacionDesc(clienteU.getId())).hasSize(1);
-        assertThat(recordatorioRepository.findByCitaId(cita.getId())).hasSize(1);
+        assertThat(recordatorioRepository.findByUsuarioId(clienteU.getId())).hasSize(1);
 
         assertThat(usuarioRepository.findByEmailIgnoreCase("ana@mail.com")).isPresent();
-        assertThat(perfilRepository.findByNombreIgnoreCase("cliente")).isPresent();
     }
 }

@@ -31,13 +31,13 @@ public class NotificacionController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener notificación por ID")
-    public NotificacionResponseDTO obtener(@PathVariable Long id) {
+    public NotificacionResponseDTO obtener(@PathVariable Integer id) {
         return notificacionService.findById(id);
     }
 
     @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Listar notificaciones de un usuario")
-    public List<NotificacionResponseDTO> listarPorUsuario(@PathVariable Long usuarioId) {
+    public List<NotificacionResponseDTO> listarPorUsuario(@PathVariable Integer usuarioId) {
         return notificacionService.findByUsuario(usuarioId);
     }
 
@@ -49,21 +49,21 @@ public class NotificacionController {
 
     @PatchMapping("/{id}/leida")
     @Operation(summary = "Marcar notificación como leída")
-    public NotificacionResponseDTO marcarLeida(@PathVariable Long id) {
+    public NotificacionResponseDTO marcarLeida(@PathVariable Integer id) {
         return notificacionService.marcarLeida(id);
     }
 
     @PatchMapping("/usuario/{usuarioId}/leidas")
     @Operation(summary = "Marcar todas las notificaciones de un usuario como leídas")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void marcarTodasLeidas(@PathVariable Long usuarioId) {
+    public void marcarTodasLeidas(@PathVariable Integer usuarioId) {
         notificacionService.marcarTodasLeidas(usuarioId);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar notificación")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         notificacionService.delete(id);
     }
 }

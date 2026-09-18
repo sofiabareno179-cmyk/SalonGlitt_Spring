@@ -3,11 +3,9 @@ package co.salonglitt.service;
 import co.salonglitt.dto.CitaRequestDTO;
 import co.salonglitt.dto.CitaResponseDTO;
 import co.salonglitt.entity.Cita;
-import co.salonglitt.entity.Servicio;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.CitaRepository;
-import co.salonglitt.repository.ServicioRepository;
 import co.salonglitt.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +22,10 @@ public class CitaService {
 
     private final CitaRepository citaRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ServicioRepository servicioRepository;
 
-    public CitaService(CitaRepository citaRepository, UsuarioRepository usuarioRepository,
-                       ServicioRepository servicioRepository) {
+    public CitaService(CitaRepository citaRepository, UsuarioRepository usuarioRepository) {
         this.citaRepository = citaRepository;
         this.usuarioRepository = usuarioRepository;
-        this.servicioRepository = servicioRepository;
     }
 
     public List<CitaResponseDTO> findAll() {
@@ -41,10 +36,10 @@ public class CitaService {
         return aDto(obtener(id));
     }
 
-    public List<CitaResponseDTO> findByCliente(Long clienteId) {
-        List<Cita> result = citaRepository.findByClienteId(clienteId);
-        if (result.isEmpty() && !usuarioRepository.existsById(clienteId)) {
-            throw new NotFoundException("Cliente no encontrado con id " + clienteId);
+    public List<CitaResponseDTO> findByUsuario(Integer usuarioId) {
+        List<Cita> result = citaRepository.findByUsuarioId(usuarioId);
+        if (result.isEmpty() && !usuarioRepository.existsById(usuarioId)) {
+            throw new NotFoundException("Usuario no encontrado con id " + usuarioId);
         }
         return result.stream().map(this::aDto).toList();
     }
@@ -54,19 +49,17 @@ public class CitaService {
     }
 
     public CitaResponseDTO create(CitaRequestDTO dto) {
-        var cliente = obtenerCliente(dto.clienteId());
-        var servicio = obtenerServicio(dto.servicioId());
-        Cita c = new Cita(cliente, servicio, dto.fechaHora(), resolverEstado(dto.estado()));
+        Usuario usuario = validarUsuario(dto.idusuario());
+        Cita c = new Cita(usuario, dto.fechahora(), resolverEstado(dto.estado()), dto.servicio().trim());
         return aDto(citaRepository.save(c));
     }
 
     public CitaResponseDTO update(Integer id, CitaRequestDTO dto) {
         Cita actual = obtener(id);
-        var cliente = obtenerCliente(dto.clienteId());
-        var servicio = obtenerServicio(dto.servicioId());
-        actual.setCliente(cliente);
-        actual.setServicio(servicio);
-        actual.setFechaHora(dto.fechaHora());
+        Usuario usuario = validarUsuario(dto.idusuario());
+        actual.setUsuario(usuario);
+        actual.setFechahora(dto.fechahora());
+        actual.setServicio(dto.servicio().trim());
         actual.setEstado(resolverEstado(dto.estado()));
         return aDto(citaRepository.save(actual));
     }
@@ -77,29 +70,22 @@ public class CitaService {
         return aDto(citaRepository.save(actual));
     }
 
-    public void delete(Long id) {
+    public void delete(Integer id) {
         obtener(id);
         citaRepository.deleteById(id);
     }
 
-    private Cita obtener(Long id) {
+    private Cita obtener(Integer id) {
         return citaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Cita no encontrada con id " + id));
     }
 
-    private Usuario obtenerCliente(Long id) {
+    private Usuario validarUsuario(Integer id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Cliente no encontrado con id " + id));
-    }
-
-    private Servicio obtenerServicio(Long id) {
-        return servicioRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Servicio no encontrado con id " + id));
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
     }
 
     private String resolverEstado(String estado) {
-
-        return (estado == null || estado.isBlank()) ? ESTADO_POR_DEFECTO : estado.trim();
         if (estado == null || estado.isBlank()) {
             return ESTADO_POR_DEFECTO;
         }
@@ -109,11 +95,10 @@ public class CitaService {
                     + ". Permitidos: " + String.join(", ", ESTADOS_VALIDOS));
         }
         return normalizado;
-
     }
 
     private CitaResponseDTO aDto(Cita c) {
-        return new CitaResponseDTO(c.getId(), c.getCliente().getId(), c.getCliente().getNombre(),
-                c.getServicio().getId(), c.getServicio().getNombre(), c.getFechaHora(), c.getEstado());
+        return new CitaResponseDTO(c.getId(), c.getUsuario().getId(), c.getUsuario().getNombreuser(),
+                c.getFechahora(), c.getEstado(), c.getServicio());
     }
 }

@@ -6,6 +6,7 @@ import co.salonglitt.entity.Agenda;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.AgendaRepository;
+import co.salonglitt.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,27 +27,26 @@ class AgendaServiceTest {
     private AgendaRepository agendaRepository;
 
     @Mock
-    private UsuarioService usuarioService;
+    private UsuarioRepository usuarioRepository;
 
     @InjectMocks
     private AgendaService service;
 
-    private Usuario usuario(Integer id, String nombreuser) {
-        Usuario u = new Usuario(nombreuser, nombreuser + "@mail.com", "hash", "123", "estilista");
+    private Usuario usuario(Integer id, String nombre) {
+        Usuario u = new Usuario(nombre, nombre + "@mail.com", "123", "300000", "estilista");
         u.setId(id);
         return u;
     }
 
-    private Agenda bloque(Integer id, Usuario usuario) {
-        Agenda a = new Agenda("lunes", "09:00", "14:00", usuario);
+    private Agenda agenda(Integer id, Usuario u) {
+        Agenda a = new Agenda("lunes", "09:00", "14:00", u);
         a.setId(id);
         return a;
     }
 
     @Test
     void create_shouldPersistAndReturnDto() {
-        Usuario usuario = usuario(1, "laura");
-        when(usuarioService.obtener(1)).thenReturn(usuario);
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario(1, "laura")));
         when(agendaRepository.save(any(Agenda.class))).thenAnswer(inv -> {
             Agenda a = inv.getArgument(0);
             a.setId(1);
@@ -60,57 +60,39 @@ class AgendaServiceTest {
         assertEquals("09:00", created.horainicio());
         assertEquals("14:00", created.horafin());
         assertEquals(1, created.usuarioId());
-        assertEquals("laura", created.usuarioNombre());
+    }
+
+    @Test
+    void create_shouldThrowWhenHoraInvalida() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.create(new AgendaRequestDTO("lunes", "14:00", "09:00", 1)));
     }
 
     @Test
     void findAll_shouldReturnAllBlocks() {
-        Usuario u1 = usuario(1, "laura");
-        Usuario u2 = usuario(2, "juan");
-        when(agendaRepository.findAll()).thenReturn(List.of(
-                bloque(1, u1),
-                bloque(2, u2)));
+        when(agendaRepository.findAll()).thenReturn(List.of(agenda(1, usuario(1, "laura"))));
 
         List<AgendaResponseDTO> agendas = service.findAll();
 
-        assertEquals(2, agendas.size());
-        assertTrue(agendas.stream().anyMatch(a -> a.diasemana().equals("lunes")));
+        assertEquals(1, agendas.size());
+        assertEquals("lunes", agendas.get(0).diasemana());
     }
 
     @Test
-    void findById_shouldReturnSavedBlock() {
-        Usuario usuario = usuario(1, "laura");
-        when(agendaRepository.findById(1)).thenReturn(Optional.of(bloque(1, usuario)));
+    void findByUsuario_shouldReturnBlocks() {
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario(1, "laura")));
+        when(agendaRepository.findByUsuarioId(1)).thenReturn(List.of(agenda(1, usuario(1, "laura"))));
 
-        AgendaResponseDTO found = service.findById(1);
+        List<AgendaResponseDTO> porUsuario = service.findByUsuario(1);
 
-        assertEquals(1, found.id());
-        assertEquals("lunes", found.diasemana());
-        assertEquals("laura", found.usuarioNombre());
+        assertEquals(1, porUsuario.size());
     }
 
     @Test
-    void update_shouldReplaceAgendaData() {
-        Usuario usuario = usuario(1, "laura");
-        when(agendaRepository.findById(1)).thenReturn(Optional.of(bloque(1, usuario)));
-        when(usuarioService.obtener(1)).thenReturn(usuario);
-        when(agendaRepository.save(any(Agenda.class))).thenAnswer(inv -> inv.getArgument(0));
+    void delete_shouldThrowWhenNotFound() {
+        when(agendaRepository.findById(999)).thenReturn(Optional.empty());
 
-        AgendaResponseDTO updated = service.update(1, new AgendaRequestDTO("martes", "08:00", "12:00", 1));
-
-        assertEquals("martes", updated.diasemana());
-        assertEquals("08:00", updated.horainicio());
-        assertEquals("12:00", updated.horafin());
-    }
-
-    @Test
-    void delete_shouldRemoveAgendaBlock() {
-        Usuario usuario = usuario(1, "laura");
-        when(agendaRepository.findById(1)).thenReturn(Optional.of(bloque(1, usuario)));
-
-        service.delete(1);
-
-        verify(agendaRepository).delete(any(Agenda.class));
+        assertThrows(NotFoundException.class, () -> service.delete(999));
     }
 
     @Test

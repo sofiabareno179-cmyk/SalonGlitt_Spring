@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface BloqueoRepository extends JpaRepository<Bloqueo, Long> {
-    List<Bloqueo> findByEstilistaId(Long estilistaId);
+public interface BloqueoRepository extends JpaRepository<Bloqueo, Integer> {
+    List<Bloqueo> findByUsuarioId(Integer usuarioId);
 }

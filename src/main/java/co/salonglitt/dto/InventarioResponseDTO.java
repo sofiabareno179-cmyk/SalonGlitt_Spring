@@ -1,12 +1,10 @@
 package co.salonglitt.dto;
 
-import java.time.LocalDateTime;
-
 public record InventarioResponseDTO(
-        Long id,
-        Long productoId,
+        Integer id,
+        Integer productoId,
         String productoNombre,
-        Integer cantidadTotal,
-        Integer stockMinimo,
-        LocalDateTime ultimaActualizacion) {
+        Integer stock,
+        String fecha,
+        String tipo) {
 }
