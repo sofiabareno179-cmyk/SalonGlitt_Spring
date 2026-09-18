@@ -1,11 +1,9 @@
 package co.salonglitt.dto;
 
-import java.time.LocalDateTime;
-
 public record RecordatorioResponseDTO(
-        Long id,
-        Long citaId,
-        LocalDateTime fechaEnvio,
-        String tipo,
-        boolean enviado) {
+        Integer idrecordatorios,
+        String titulo,
+        String mensaje,
+        String fechaRecordatorio,
+        Integer idusuario) {
 }

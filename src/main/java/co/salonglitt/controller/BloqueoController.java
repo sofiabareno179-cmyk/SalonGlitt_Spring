@@ -31,32 +31,32 @@ public class BloqueoController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener bloqueo por ID")
-    public BloqueoResponseDTO obtener(@PathVariable Long id) {
+    public BloqueoResponseDTO obtener(@PathVariable Integer id) {
         return bloqueoService.findById(id);
     }
 
-    @GetMapping("/estilista/{estilistaId}")
-    @Operation(summary = "Listar bloqueos por estilista")
-    public List<BloqueoResponseDTO> listarPorEstilista(@PathVariable Long estilistaId) {
-        return bloqueoService.findByEstilista(estilistaId);
+    @GetMapping("/usuario/{usuarioId}")
+    @Operation(summary = "Listar bloqueos por usuario")
+    public List<BloqueoResponseDTO> listarPorUsuario(@PathVariable Integer usuarioId) {
+        return bloqueoService.findByUsuario(usuarioId);
     }
 
     @PostMapping
-    @Operation(summary = "Crear bloqueo", description = "El estilista debe existir y la fecha de fin debe ser posterior a la de inicio")
+    @Operation(summary = "Crear bloqueo", description = "El usuario debe existir y la hora de fin debe ser posterior a la de inicio")
     public ResponseEntity<BloqueoResponseDTO> crear(@Valid @RequestBody BloqueoRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bloqueoService.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar bloqueo")
-    public BloqueoResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody BloqueoRequestDTO dto) {
+    public BloqueoResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody BloqueoRequestDTO dto) {
         return bloqueoService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar bloqueo")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         bloqueoService.delete(id);
     }
 }

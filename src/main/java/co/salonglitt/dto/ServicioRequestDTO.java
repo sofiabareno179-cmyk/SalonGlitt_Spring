@@ -10,5 +10,6 @@ public record ServicioRequestDTO(
         @NotNull(message = "El precio es obligatorio") BigDecimal precio,
         @NotBlank(message = "La duración es obligatoria") String duracion,
         @NotBlank(message = "La categoría es obligatoria") String categoria,
-        String imagen) {
+        String imagen,
+        Integer idcitas) {
 }

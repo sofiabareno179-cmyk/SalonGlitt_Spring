@@ -1,17 +1,8 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "catalogo_precios")
@@ -19,68 +10,80 @@ public class CatalogoPrecio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idcatalogo")
+    private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "servicio_id", nullable = false)
-    private Servicio servicio;
+    @Column(nullable = false, length = 150)
+    private String nombre;
 
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal precio;
+    @Column(length = 500)
+    private String descripcion;
 
-    @Column(name = "fecha_inicio", nullable = false)
-    private LocalDate fechaInicio;
+    @Column(nullable = false)
+    private Double precio;
 
-    @Column(name = "fecha_fin")
-    private LocalDate fechaFin;
+    @Column(nullable = false, length = 100)
+    private String categoria;
+
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
 
     public CatalogoPrecio() {
     }
 
-    public CatalogoPrecio(Servicio servicio, BigDecimal precio, LocalDate fechaInicio, LocalDate fechaFin) {
-        this.servicio = servicio;
+    public CatalogoPrecio(String nombre, String descripcion, Double precio, String categoria) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
         this.precio = precio;
-        this.fechaInicio = fechaInicio;
-        this.fechaFin = fechaFin;
+        this.categoria = categoria;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Servicio getServicio() {
-        return servicio;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setServicio(Servicio servicio) {
-        this.servicio = servicio;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
-    public BigDecimal getPrecio() {
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public Double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(BigDecimal precio) {
+    public void setPrecio(Double precio) {
         this.precio = precio;
     }
 
-    public LocalDate getFechaInicio() {
-        return fechaInicio;
+    public String getCategoria() {
+        return categoria;
     }
 
-    public void setFechaInicio(LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
     }
 
-    public LocalDate getFechaFin() {
-        return fechaFin;
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
     }
 
-    public void setFechaFin(LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

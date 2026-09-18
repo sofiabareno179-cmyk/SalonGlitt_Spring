@@ -1,15 +1,8 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,61 +11,70 @@ public class Bloqueo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idbloqueo")
+    private Integer id;
+
+    @Column(nullable = false)
+    private LocalDate fecha;
+
+    @Column(name = "hora_inicio", nullable = false, length = 5)
+    private String horaInicio;
+
+    @Column(name = "hora_fin", nullable = false, length = 5)
+    private String horaFin;
+
+    @Column(length = 255)
+    private String motivo;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "estilista_id", nullable = false)
-    private Usuario estilista;
+    @JoinColumn(name = "idusuario", nullable = false)
+    private Usuario usuario;
 
-    @Column(nullable = false)
-    private LocalDateTime inicio;
-
-    @Column(nullable = false)
-    private LocalDateTime fin;
-
-    @Column(length = 300)
-    private String motivo;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public Bloqueo() {
     }
 
-    public Bloqueo(Usuario estilista, LocalDateTime inicio, LocalDateTime fin, String motivo) {
-        this.estilista = estilista;
-        this.inicio = inicio;
-        this.fin = fin;
+    public Bloqueo(LocalDate fecha, String horaInicio, String horaFin, String motivo, Usuario usuario) {
+        this.fecha = fecha;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
         this.motivo = motivo;
+        this.usuario = usuario;
+        this.createdAt = LocalDateTime.now();
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Usuario getEstilista() {
-        return estilista;
+    public LocalDate getFecha() {
+        return fecha;
     }
 
-    public void setEstilista(Usuario estilista) {
-        this.estilista = estilista;
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
     }
 
-    public LocalDateTime getInicio() {
-        return inicio;
+    public String getHoraInicio() {
+        return horaInicio;
     }
 
-    public void setInicio(LocalDateTime inicio) {
-        this.inicio = inicio;
+    public void setHoraInicio(String horaInicio) {
+        this.horaInicio = horaInicio;
     }
 
-    public LocalDateTime getFin() {
-        return fin;
+    public String getHoraFin() {
+        return horaFin;
     }
 
-    public void setFin(LocalDateTime fin) {
-        this.fin = fin;
+    public void setHoraFin(String horaFin) {
+        this.horaFin = horaFin;
     }
 
     public String getMotivo() {
@@ -81,5 +83,21 @@ public class Bloqueo {
 
     public void setMotivo(String motivo) {
         this.motivo = motivo;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

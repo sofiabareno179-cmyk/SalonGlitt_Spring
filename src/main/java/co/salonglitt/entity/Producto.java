@@ -1,16 +1,7 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "productos")
@@ -18,40 +9,36 @@ public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idproductos")
+    private Integer id;
 
     @Column(nullable = false, length = 150)
     private String nombre;
 
-    @Column(length = 300)
+    @Column(length = 500)
     private String descripcion;
 
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal precio;
-
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "proveedor_id", nullable = false)
-    private Proveedor proveedor;
-
     @Column(nullable = false)
-    private boolean activo = true;
+    private Double precio;
+
+    @Column(nullable = false, length = 100)
+    private String categoria;
 
     public Producto() {
     }
 
-    public Producto(String nombre, String descripcion, BigDecimal precio, Proveedor proveedor, boolean activo) {
+    public Producto(String nombre, String descripcion, Double precio, String categoria) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
-        this.proveedor = proveedor;
-        this.activo = activo;
+        this.categoria = categoria;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -71,27 +58,19 @@ public class Producto {
         this.descripcion = descripcion;
     }
 
-    public BigDecimal getPrecio() {
+    public Double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(BigDecimal precio) {
+    public void setPrecio(Double precio) {
         this.precio = precio;
     }
 
-    public Proveedor getProveedor() {
-        return proveedor;
+    public String getCategoria() {
+        return categoria;
     }
 
-    public void setProveedor(Proveedor proveedor) {
-        this.proveedor = proveedor;
-    }
-
-    public boolean isActivo() {
-        return activo;
-    }
-
-    public void setActivo(boolean activo) {
-        this.activo = activo;
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
     }
 }

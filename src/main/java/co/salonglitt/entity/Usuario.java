@@ -1,64 +1,56 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuario")
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idusuario")
+    private Integer id;
 
-    @Column(nullable = false, length = 120)
-    private String nombre;
+    @Column(nullable = false, unique = true, length = 100)
+    private String nombreuser;
 
-    @Column(nullable = false, unique = true, length = 120)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(length = 30)
+    @Column(name = "password_hash", nullable = false, length = 250)
+    private String passwordHash;
+
+    @Column(length = 20)
     private String telefono;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "perfil_id", nullable = false)
-    private Perfil perfil;
-
-    @Column(nullable = false)
-    private boolean activo = true;
+    @Column(nullable = false, length = 20)
+    private String rol;
 
     public Usuario() {
     }
 
-    public Usuario(String nombre, String email, String telefono, Perfil perfil, boolean activo) {
-        this.nombre = nombre;
+    public Usuario(String nombreuser, String email, String passwordHash, String telefono, String rol) {
+        this.nombreuser = nombreuser;
         this.email = email;
+        this.passwordHash = passwordHash;
         this.telefono = telefono;
-        this.perfil = perfil;
-        this.activo = activo;
+        this.rol = rol;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getNombreuser() {
+        return nombreuser;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setNombreuser(String nombreuser) {
+        this.nombreuser = nombreuser;
     }
 
     public String getEmail() {
@@ -69,6 +61,14 @@ public class Usuario {
         this.email = email;
     }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public String getTelefono() {
         return telefono;
     }
@@ -77,19 +77,11 @@ public class Usuario {
         this.telefono = telefono;
     }
 
-    public Perfil getPerfil() {
-        return perfil;
+    public String getRol() {
+        return rol;
     }
 
-    public void setPerfil(Perfil perfil) {
-        this.perfil = perfil;
-    }
-
-    public boolean isActivo() {
-        return activo;
-    }
-
-    public void setActivo(boolean activo) {
-        this.activo = activo;
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 }

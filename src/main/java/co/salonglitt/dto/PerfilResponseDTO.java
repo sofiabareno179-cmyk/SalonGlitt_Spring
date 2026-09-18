@@ -5,6 +5,6 @@ public record PerfilResponseDTO(
         String nombre,
         String apellido,
         String bio,
-        Integer usuarioId,
+        Integer idusuario,
         String usuarioNombre) {
 }

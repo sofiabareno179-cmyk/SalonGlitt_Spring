@@ -3,11 +3,14 @@ package co.salonglitt.repository;
 import co.salonglitt.entity.Agenda;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDate;
+import co.salonglitt.entity.Usuario;
+
+
 import java.util.List;
 
-public interface AgendaRepository extends JpaRepository<Agenda, Long> {
-    List<Agenda> findByEstilistaId(Long estilistaId);
+public interface AgendaRepository extends JpaRepository<Agenda, Integer> {
 
-    List<Agenda> findByEstilistaIdAndFecha(Long estilistaId, LocalDate fecha);
+    List<Agenda> findByUsuarioId(Integer usuarioId);
+
+    boolean existsByUsuario(Usuario usuario);
 }

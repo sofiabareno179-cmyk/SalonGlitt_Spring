@@ -7,5 +7,5 @@ public record PerfilRequestDTO(
         @NotBlank(message = "El nombre es obligatorio") String nombre,
         String apellido,
         String bio,
-        @NotNull(message = "El usuario es obligatorio") Integer usuarioId) {
+        @NotNull(message = "El usuario es obligatorio") Integer idusuario) {
 }

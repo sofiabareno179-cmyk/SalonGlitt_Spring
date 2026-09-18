@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PromocionRepository extends JpaRepository<Promocion, Long> {
+public interface PromocionRepository extends JpaRepository<Promocion, Integer> {
     List<Promocion> findByActivaTrue();
 }

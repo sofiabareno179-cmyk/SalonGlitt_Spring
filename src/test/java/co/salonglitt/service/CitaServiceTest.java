@@ -6,6 +6,7 @@ import co.salonglitt.entity.Cita;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.CitaRepository;
+import co.salonglitt.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,95 +28,81 @@ class CitaServiceTest {
     private CitaRepository citaRepository;
 
     @Mock
-    private UsuarioService usuarioService;
+    private UsuarioRepository usuarioRepository;
 
     @InjectMocks
     private CitaService service;
 
-    private Usuario usuario(Integer id, String nombreuser) {
-        Usuario u = new Usuario(nombreuser, nombreuser + "@mail.com", "hash", "111", "cliente");
+    private Usuario usuario(Integer id, String nombre) {
+        Usuario u = new Usuario(nombre, nombre + "@mail.com", "123", "300000", "cliente");
         u.setId(id);
         return u;
     }
 
-    private Cita cita(Integer id, Usuario usuario, LocalDateTime fechaHora, String estado) {
-        Cita c = new Cita(usuario, fechaHora, estado, "corte");
+    private Cita cita(Integer id, Usuario cliente, LocalDateTime fechaHora, String estado) {
+        Cita c = new Cita(cliente, fechaHora, estado, "Corte");
         c.setId(id);
         return c;
     }
 
     @Test
     void create_shouldPersistAndReturnDto() {
-        Usuario usuario = usuario(1, "ana");
-        LocalDateTime fechaHora = LocalDateTime.now().plusDays(1).withMinute(0).withSecond(0).withNano(0);
-        when(usuarioService.obtener(1)).thenReturn(usuario);
+        Usuario cliente = usuario(1, "ana");
+        LocalDateTime fechaHora = LocalDateTime.now().plusDays(1);
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(cliente));
         when(citaRepository.save(any(Cita.class))).thenAnswer(inv -> {
             Cita c = inv.getArgument(0);
             c.setId(1);
             return c;
         });
 
-        CitaResponseDTO created = service.create(new CitaRequestDTO(1, fechaHora, null, "corte"));
+        CitaResponseDTO created = service.create(new CitaRequestDTO(1, fechaHora, null, "Corte"));
 
         assertNotNull(created.id());
-        assertEquals(1, created.usuarioId());
-        assertEquals("ana", created.usuarioNombre());
-        assertEquals("Espera", created.estado());
-        assertEquals("corte", created.servicio());
+        assertEquals(1, created.idusuario());
+        assertEquals("PENDIENTE", created.estado());
     }
 
     @Test
-    void findByUsuarioAndEstado_shouldFilterAppointments() {
-        Usuario usuario = usuario(1, "ana");
-        when(usuarioService.obtener(1)).thenReturn(usuario);
+    void findByUsuario_shouldReturnAppointments() {
+        Usuario cliente = usuario(1, "ana");
         when(citaRepository.findByUsuarioId(1)).thenReturn(List.of(
-                cita(1, usuario, LocalDateTime.now().plusDays(2), "Confirmada"),
-                cita(2, usuario, LocalDateTime.now().plusDays(3), "Cancelada")));
-        when(citaRepository.findByEstadoIgnoreCase("Confirmada")).thenReturn(List.of(
-                cita(1, usuario, LocalDateTime.now().plusDays(2), "Confirmada")));
+                cita(1, cliente, LocalDateTime.now().plusDays(2), "CONFIRMADA"),
+                cita(2, cliente, LocalDateTime.now().plusDays(3), "CANCELADA")));
 
         List<CitaResponseDTO> porUsuario = service.findByUsuario(1);
-        List<CitaResponseDTO> porEstado = service.findByEstado("Confirmada");
 
         assertEquals(2, porUsuario.size());
-        assertTrue(porEstado.stream().anyMatch(c -> c.usuarioId().equals(1)));
     }
 
     @Test
-    void update_shouldReplaceAppointmentData() {
-        Usuario usuario = usuario(1, "ana");
-        LocalDateTime fechaOriginal = LocalDateTime.now().plusDays(5);
-        when(citaRepository.findById(1)).thenReturn(Optional.of(cita(1, usuario, fechaOriginal, "Espera")));
-        when(usuarioService.obtener(1)).thenReturn(usuario);
-        when(citaRepository.save(any(Cita.class))).thenAnswer(inv -> inv.getArgument(0));
+    void findByUsuario_shouldThrowWhenUserDoesNotExist() {
+        when(citaRepository.findByUsuarioId(99)).thenReturn(List.of());
+        when(usuarioRepository.existsById(99)).thenReturn(false);
 
-        LocalDateTime fechaNueva = fechaOriginal.plusHours(2);
-        CitaResponseDTO updated = service.update(1, new CitaRequestDTO(1, fechaNueva, "Confirmada", "liso"));
-
-        assertEquals("Confirmada", updated.estado());
-        assertEquals("liso", updated.servicio());
-        assertEquals(fechaNueva, updated.fechahora());
+        assertThrows(NotFoundException.class, () -> service.findByUsuario(99));
     }
 
     @Test
-    void cambiarEstado_shouldUpdateStatus() {
-        Usuario usuario = usuario(1, "ana");
-        when(citaRepository.findById(1)).thenReturn(Optional.of(cita(1, usuario, LocalDateTime.now().plusDays(6), "Espera")));
-        when(citaRepository.save(any(Cita.class))).thenAnswer(inv -> inv.getArgument(0));
+    void findByEstado_shouldReturnAppointmentsByStatus() {
+        Usuario cliente = usuario(1, "ana");
+        when(citaRepository.findByEstadoIgnoreCase("CONFIRMADA")).thenReturn(List.of(
+                cita(1, cliente, LocalDateTime.now().plusDays(2), "CONFIRMADA")));
 
-        CitaResponseDTO updated = service.cambiarEstado(1, "Cancelada");
+        List<CitaResponseDTO> porEstado = service.findByEstado("CONFIRMADA");
 
-        assertEquals("Cancelada", updated.estado());
+        assertEquals(1, porEstado.size());
     }
 
     @Test
     void delete_shouldRemoveAppointment() {
-        Usuario usuario = usuario(1, "ana");
-        when(citaRepository.findById(1)).thenReturn(Optional.of(cita(1, usuario, LocalDateTime.now().plusDays(7), "Espera")));
+        Usuario cliente = usuario(1, "ana");
+        when(citaRepository.findById(1)).thenReturn(
+                Optional.of(cita(1, cliente, LocalDateTime.now().plusDays(1), "PENDIENTE")));
 
         service.delete(1);
 
-        verify(citaRepository).delete(any(Cita.class));
+        verify(citaRepository).deleteById(1);
     }
 
     @Test

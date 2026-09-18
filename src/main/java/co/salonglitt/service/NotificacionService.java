@@ -26,29 +26,29 @@ public class NotificacionService {
         return notificacionRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public NotificacionResponseDTO findById(Long id) {
+    public NotificacionResponseDTO findById(Integer id) {
         return aDto(obtener(id));
     }
 
-    public List<NotificacionResponseDTO> findByUsuario(Long usuarioId) {
+    public List<NotificacionResponseDTO> findByUsuario(Integer usuarioId) {
         validarUsuario(usuarioId);
         return notificacionRepository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId).stream()
                 .map(this::aDto).toList();
     }
 
     public NotificacionResponseDTO create(NotificacionRequestDTO dto) {
-        var usuario = validarUsuario(dto.usuarioId());
-        Notificacion n = new Notificacion(usuario, dto.titulo().trim(), dto.mensaje().trim(), false, null);
+        Usuario usuario = validarUsuario(dto.idusuario());
+        Notificacion n = new Notificacion(usuario, dto.titulo().trim(), dto.mensaje(), false, null);
         return aDto(notificacionRepository.save(n));
     }
 
-    public NotificacionResponseDTO marcarLeida(Long id) {
+    public NotificacionResponseDTO marcarLeida(Integer id) {
         Notificacion actual = obtener(id);
         actual.setLeida(true);
         return aDto(notificacionRepository.save(actual));
     }
 
-    public void marcarTodasLeidas(Long usuarioId) {
+    public void marcarTodasLeidas(Integer usuarioId) {
         validarUsuario(usuarioId);
         notificacionRepository.findByUsuarioIdAndLeidaFalse(usuarioId).forEach(n -> {
             n.setLeida(true);
@@ -56,23 +56,23 @@ public class NotificacionService {
         });
     }
 
-    public void delete(Long id) {
+    public void delete(Integer id) {
         obtener(id);
         notificacionRepository.deleteById(id);
     }
 
-    private Notificacion obtener(Long id) {
+    private Notificacion obtener(Integer id) {
         return notificacionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Notificación no encontrada con id " + id));
     }
 
-    private Usuario validarUsuario(Long id) {
+    private Usuario validarUsuario(Integer id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
     }
 
     private NotificacionResponseDTO aDto(Notificacion n) {
-        return new NotificacionResponseDTO(n.getId(), n.getUsuario().getId(), n.getTitulo(), n.getMensaje(),
-                n.isLeida(), n.getFechaCreacion());
+        return new NotificacionResponseDTO(n.getId(), n.getUsuario().getId(),
+                n.getTitulo(), n.getMensaje(), n.getLeida(), n.getFechaCreacion());
     }
 }

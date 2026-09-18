@@ -31,7 +31,7 @@ public class ProveedorController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener proveedor por ID")
-    public ProveedorResponseDTO obtener(@PathVariable Long id) {
+    public ProveedorResponseDTO obtener(@PathVariable Integer id) {
         return proveedorService.findById(id);
     }
 
@@ -43,14 +43,14 @@ public class ProveedorController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar proveedor")
-    public ProveedorResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorRequestDTO dto) {
+    public ProveedorResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody ProveedorRequestDTO dto) {
         return proveedorService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar proveedor")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         proveedorService.delete(id);
     }
 }

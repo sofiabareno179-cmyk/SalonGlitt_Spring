@@ -1,13 +1,9 @@
 package co.salonglitt.dto;
 
-import java.math.BigDecimal;
-
 public record ProductoResponseDTO(
-        Long id,
+        Integer id,
         String nombre,
         String descripcion,
-        BigDecimal precio,
-        Long proveedorId,
-        String proveedorNombre,
-        boolean activo) {
+        Double precio,
+        String categoria) {
 }

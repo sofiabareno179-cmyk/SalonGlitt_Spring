@@ -1,17 +1,8 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "promociones")
@@ -19,63 +10,45 @@ public class Promocion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idpromocion")
+    private Integer id;
 
-    @Column(nullable = false, length = 150)
-    private String nombre;
+    @Column(nullable = false, length = 200)
+    private String titulo;
 
-    @Column(length = 300)
+    @Column(columnDefinition = "text")
     private String descripcion;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "servicio_id")
-    private Servicio servicio;
+    @Column
+    private Boolean activa;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "producto_id")
-    private Producto producto;
-
-    @Column(nullable = false, precision = 5, scale = 2)
-    private BigDecimal descuento;
-
-    @Column(name = "fecha_inicio", nullable = false)
-    private LocalDate fechaInicio;
-
-    @Column(name = "fecha_fin", nullable = false)
-    private LocalDate fechaFin;
-
-    @Column(nullable = false)
-    private boolean activa = true;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public Promocion() {
     }
 
-    public Promocion(String nombre, String descripcion, Servicio servicio, Producto producto,
-                     BigDecimal descuento, LocalDate fechaInicio, LocalDate fechaFin, boolean activa) {
-        this.nombre = nombre;
+    public Promocion(String titulo, String descripcion, Boolean activa) {
+        this.titulo = titulo;
         this.descripcion = descripcion;
-        this.servicio = servicio;
-        this.producto = producto;
-        this.descuento = descuento;
-        this.fechaInicio = fechaInicio;
-        this.fechaFin = fechaFin;
         this.activa = activa;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getTitulo() {
+        return titulo;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
     public String getDescripcion() {
@@ -86,51 +59,19 @@ public class Promocion {
         this.descripcion = descripcion;
     }
 
-    public Servicio getServicio() {
-        return servicio;
-    }
-
-    public void setServicio(Servicio servicio) {
-        this.servicio = servicio;
-    }
-
-    public Producto getProducto() {
-        return producto;
-    }
-
-    public void setProducto(Producto producto) {
-        this.producto = producto;
-    }
-
-    public BigDecimal getDescuento() {
-        return descuento;
-    }
-
-    public void setDescuento(BigDecimal descuento) {
-        this.descuento = descuento;
-    }
-
-    public LocalDate getFechaInicio() {
-        return fechaInicio;
-    }
-
-    public void setFechaInicio(LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
-    }
-
-    public LocalDate getFechaFin() {
-        return fechaFin;
-    }
-
-    public void setFechaFin(LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
-    }
-
-    public boolean isActiva() {
+    public Boolean getActiva() {
         return activa;
     }
 
-    public void setActiva(boolean activa) {
+    public void setActiva(Boolean activa) {
         this.activa = activa;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

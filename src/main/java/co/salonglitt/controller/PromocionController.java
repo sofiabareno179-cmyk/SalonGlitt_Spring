@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/promociones")
-@Tag(name = "Promociones", description = "Descuentos sobre servicios o productos")
+@Tag(name = "Promociones", description = "Promociones del salón")
 public class PromocionController {
 
     private final PromocionService promocionService;
@@ -29,34 +29,34 @@ public class PromocionController {
         return promocionService.findAll();
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Obtener promoción por ID")
-    public PromocionResponseDTO obtener(@PathVariable Long id) {
-        return promocionService.findById(id);
-    }
-
     @GetMapping("/activas")
     @Operation(summary = "Listar promociones activas")
     public List<PromocionResponseDTO> listarActivas() {
         return promocionService.findActivas();
     }
 
+    @GetMapping("/{id}")
+    @Operation(summary = "Obtener promoción por ID")
+    public PromocionResponseDTO obtener(@PathVariable Integer id) {
+        return promocionService.findById(id);
+    }
+
     @PostMapping
-    @Operation(summary = "Crear promoción", description = "Debe aplicar a un servicio o a un producto")
+    @Operation(summary = "Crear promoción", description = "Si activa no se envía, se crea como activa")
     public ResponseEntity<PromocionResponseDTO> crear(@Valid @RequestBody PromocionRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(promocionService.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar promoción")
-    public PromocionResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody PromocionRequestDTO dto) {
+    public PromocionResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody PromocionRequestDTO dto) {
         return promocionService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar promoción")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         promocionService.delete(id);
     }
 }

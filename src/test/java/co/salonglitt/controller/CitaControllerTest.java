@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SuppressWarnings("null")
 @WebMvcTest(controllers = CitaController.class)
 class CitaControllerTest {
 
@@ -35,31 +34,35 @@ class CitaControllerTest {
 
     private final LocalDateTime futuro = LocalDateTime.now().plusDays(2);
 
+    private CitaResponseDTO dto(int id, String estado, String servicio) {
+        return new CitaResponseDTO(id, 1, "ana", futuro, estado, servicio);
+    }
+
     @Test
     void listar_shouldReturnListOfDTOs() throws Exception {
-        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Espera", "corte");
+        CitaResponseDTO dto = dto(1, "PENDIENTE", "corte");
         when(citaService.findAll()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/citas"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].usuarioNombre").value("ana"))
-                .andExpect(jsonPath("$[0].estado").value("Espera"));
+                .andExpect(jsonPath("$[0].estado").value("PENDIENTE"));
     }
 
     @Test
     void listar_shouldFilterByEstado() throws Exception {
-        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Confirmada", "corte");
-        when(citaService.findByEstado("Confirmada")).thenReturn(List.of(dto));
+        CitaResponseDTO dto = dto(1, "CONFIRMADA", "corte");
+        when(citaService.findByEstado("CONFIRMADA")).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/api/citas").param("estado", "Confirmada"))
+        mockMvc.perform(get("/api/citas").param("estado", "CONFIRMADA"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].estado").value("Confirmada"));
+                .andExpect(jsonPath("$[0].estado").value("CONFIRMADA"));
     }
 
     @Test
     void obtener_shouldReturnDTO_whenCitaExists() throws Exception {
-        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Espera", "corte");
+        CitaResponseDTO dto = dto(1, "PENDIENTE", "corte");
         when(citaService.findById(1)).thenReturn(dto);
 
         mockMvc.perform(get("/api/citas/1"))
@@ -77,18 +80,18 @@ class CitaControllerTest {
 
     @Test
     void listarPorUsuario_shouldReturnDTOs() throws Exception {
-        CitaResponseDTO dto = new CitaResponseDTO(1, 1, "ana", futuro, "Espera", "corte");
+        CitaResponseDTO dto = dto(1, "PENDIENTE", "corte");
         when(citaService.findByUsuario(1)).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/citas/usuario/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].usuarioId").value(1));
+                .andExpect(jsonPath("$[0].idusuario").value(1));
     }
 
     @Test
     void crear_shouldReturnCreatedStatus() throws Exception {
-        CitaRequestDTO request = new CitaRequestDTO(1, futuro, "Espera", "corte");
-        CitaResponseDTO response = new CitaResponseDTO(2, 1, "ana", futuro, "Espera", "corte");
+        CitaRequestDTO request = new CitaRequestDTO(1, futuro, "PENDIENTE", "corte");
+        CitaResponseDTO response = dto(2, "PENDIENTE", "corte");
         when(citaService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/citas")
@@ -108,18 +111,18 @@ class CitaControllerTest {
 
     @Test
     void cambiarEstado_shouldReturnDTO() throws Exception {
-        CitaResponseDTO response = new CitaResponseDTO(1, 1, "ana", futuro, "Cancelada", "corte");
-        when(citaService.cambiarEstado(1, "Cancelada")).thenReturn(response);
+        CitaResponseDTO response = dto(1, "CANCELADA", "corte");
+        when(citaService.cambiarEstado(1, "CANCELADA")).thenReturn(response);
 
-        mockMvc.perform(patch("/api/citas/1/estado").param("estado", "Cancelada"))
+        mockMvc.perform(patch("/api/citas/1/estado").param("estado", "CANCELADA"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado").value("Cancelada"));
+                .andExpect(jsonPath("$.estado").value("CANCELADA"));
     }
 
     @Test
     void actualizar_shouldReturnDTO() throws Exception {
-        CitaRequestDTO request = new CitaRequestDTO(1, futuro, "Confirmada", "liso");
-        CitaResponseDTO response = new CitaResponseDTO(1, 1, "ana", futuro, "Confirmada", "liso");
+        CitaRequestDTO request = new CitaRequestDTO(1, futuro, "CONFIRMADA", "liso");
+        CitaResponseDTO response = dto(1, "CONFIRMADA", "liso");
         when(citaService.update(eq(1), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/citas/1")

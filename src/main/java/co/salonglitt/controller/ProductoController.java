@@ -31,32 +31,26 @@ public class ProductoController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener producto por ID")
-    public ProductoResponseDTO obtener(@PathVariable Long id) {
+    public ProductoResponseDTO obtener(@PathVariable Integer id) {
         return productoService.findById(id);
     }
 
-    @GetMapping("/proveedor/{proveedorId}")
-    @Operation(summary = "Listar productos por proveedor")
-    public List<ProductoResponseDTO> listarPorProveedor(@PathVariable Long proveedorId) {
-        return productoService.findByProveedor(proveedorId);
-    }
-
     @PostMapping
-    @Operation(summary = "Crear producto", description = "El proveedor debe existir")
+    @Operation(summary = "Crear producto")
     public ResponseEntity<ProductoResponseDTO> crear(@Valid @RequestBody ProductoRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productoService.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar producto")
-    public ProductoResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProductoRequestDTO dto) {
+    public ProductoResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody ProductoRequestDTO dto) {
         return productoService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar producto")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         productoService.delete(id);
     }
 }

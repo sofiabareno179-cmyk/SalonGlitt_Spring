@@ -1,16 +1,6 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "recordatorios")
@@ -18,68 +8,73 @@ public class Recordatorio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idrecordatorios")
+    private Integer id;
+
+    @Column(nullable = false, length = 150)
+    private String titulo;
+
+    @Column(length = 500)
+    private String mensaje;
+
+    @Column(name = "fecha_recordatorio", nullable = false, length = 100)
+    private String fechaRecordatorio;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "cita_id", nullable = false)
-    private Cita cita;
-
-    @Column(name = "fecha_envio")
-    private LocalDateTime fechaEnvio;
-
-    @Column(nullable = false, length = 20)
-    private String tipo = "EMAIL";
-
-    @Column(nullable = false)
-    private boolean enviado = false;
+    @JoinColumn(name = "idusuario", nullable = false)
+    private Usuario usuario;
 
     public Recordatorio() {
     }
 
-    public Recordatorio(Cita cita, LocalDateTime fechaEnvio, String tipo, boolean enviado) {
-        this.cita = cita;
-        this.fechaEnvio = fechaEnvio;
-        this.tipo = tipo;
-        this.enviado = enviado;
+    public Recordatorio(String titulo, String mensaje, String fechaRecordatorio, Usuario usuario) {
+        this.titulo = titulo;
+        this.mensaje = mensaje;
+        this.fechaRecordatorio = fechaRecordatorio;
+        this.usuario = usuario;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public Integer getIdrecordatorios() {
+        return id;
+    }
+
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Cita getCita() {
-        return cita;
+    public String getTitulo() {
+        return titulo;
     }
 
-    public void setCita(Cita cita) {
-        this.cita = cita;
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
-    public LocalDateTime getFechaEnvio() {
-        return fechaEnvio;
+    public String getMensaje() {
+        return mensaje;
     }
 
-    public void setFechaEnvio(LocalDateTime fechaEnvio) {
-        this.fechaEnvio = fechaEnvio;
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
     }
 
-    public String getTipo() {
-        return tipo;
+    public String getFechaRecordatorio() {
+        return fechaRecordatorio;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setFechaRecordatorio(String fechaRecordatorio) {
+        this.fechaRecordatorio = fechaRecordatorio;
     }
 
-    public boolean isEnviado() {
-        return enviado;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setEnviado(boolean enviado) {
-        this.enviado = enviado;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }

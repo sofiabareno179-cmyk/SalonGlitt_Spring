@@ -3,10 +3,10 @@ package co.salonglitt.dto;
 import java.time.LocalDateTime;
 
 public record NotificacionResponseDTO(
-        Long id,
-        Long usuarioId,
+        Integer id,
+        Integer idusuario,
         String titulo,
         String mensaje,
-        boolean leida,
+        Boolean leida,
         LocalDateTime fechaCreacion) {
 }

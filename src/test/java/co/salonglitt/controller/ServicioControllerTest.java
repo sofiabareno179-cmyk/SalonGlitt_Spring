@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SuppressWarnings("null")
 @WebMvcTest(controllers = ServicioController.class)
 class ServicioControllerTest {
 
@@ -35,7 +34,7 @@ class ServicioControllerTest {
 
     @Test
     void listar_shouldReturnListOfDTOs() throws Exception {
-        ServicioResponseDTO dto = new ServicioResponseDTO(1, "Corte", new BigDecimal("60000"), "45", "peluqueria", null);
+        ServicioResponseDTO dto = new ServicioResponseDTO(1, "Corte", new BigDecimal("60000"), "45", "peluqueria", null, null);
         when(servicioService.findAll()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/servicios"))
@@ -47,7 +46,7 @@ class ServicioControllerTest {
 
     @Test
     void obtener_shouldReturnDTO_whenServicioExists() throws Exception {
-        ServicioResponseDTO dto = new ServicioResponseDTO(1, "Corte", new BigDecimal("60000"), "45", "peluqueria", null);
+        ServicioResponseDTO dto = new ServicioResponseDTO(1, "Corte", new BigDecimal("60000"), "45", "peluqueria", null, null);
         when(servicioService.findById(1)).thenReturn(dto);
 
         mockMvc.perform(get("/api/servicios/1"))
@@ -65,8 +64,8 @@ class ServicioControllerTest {
 
     @Test
     void crear_shouldReturnCreatedStatus() throws Exception {
-        ServicioRequestDTO request = new ServicioRequestDTO("Corte", new BigDecimal("60000"), "45", "peluqueria", null);
-        ServicioResponseDTO response = new ServicioResponseDTO(2, "Corte", new BigDecimal("60000"), "45", "peluqueria", null);
+        ServicioRequestDTO request = new ServicioRequestDTO("Corte", new BigDecimal("60000"), "45", "peluqueria", null, null);
+        ServicioResponseDTO response = new ServicioResponseDTO(2, "Corte", new BigDecimal("60000"), "45", "peluqueria", null, null);
         when(servicioService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/servicios")
@@ -86,8 +85,8 @@ class ServicioControllerTest {
 
     @Test
     void actualizar_shouldReturnDTO() throws Exception {
-        ServicioRequestDTO request = new ServicioRequestDTO("Tintura", new BigDecimal("90000"), "90", "color", null);
-        ServicioResponseDTO response = new ServicioResponseDTO(1, "Tintura", new BigDecimal("90000"), "90", "color", null);
+        ServicioRequestDTO request = new ServicioRequestDTO("Tintura", new BigDecimal("90000"), "90", "color", null, null);
+        ServicioResponseDTO response = new ServicioResponseDTO(1, "Tintura", new BigDecimal("90000"), "90", "color", null, null);
         when(servicioService.update(eq(1), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/servicios/1")
