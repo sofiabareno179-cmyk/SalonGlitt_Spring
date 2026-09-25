@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface PerfilRepository extends JpaRepository<Perfil, Long> {
     Optional<Perfil> findByNombreIgnoreCase(String nombre);
+
+    default Optional<Perfil> findById(Integer id) {
+        return findById(id.longValue());
+    }
 }

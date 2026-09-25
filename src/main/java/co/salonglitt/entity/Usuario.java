@@ -27,6 +27,12 @@ public class Usuario {
     @Column(length = 30)
     private String telefono;
 
+    @Column(name = "password_hash", length = 100)
+    private String passwordHash;
+
+    @Column(length = 30)
+    private String rol;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "perfil_id", nullable = false)
     private Perfil perfil;
@@ -45,12 +51,25 @@ public class Usuario {
         this.activo = activo;
     }
 
+    public Usuario(String nombre, String email, String passwordHash, String telefono, String rol) {
+        this.nombre = nombre;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.telefono = telefono;
+        this.rol = rol;
+        this.activo = true;
+    }
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id == null ? null : id.longValue();
     }
 
     public String getNombre() {
@@ -75,6 +94,22 @@ public class Usuario {
 
     public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 
     public Perfil getPerfil() {

@@ -8,107 +8,79 @@ import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.PerfilRepository;
 import co.salonglitt.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
 @Service
 public class UsuarioService {
-
     private final UsuarioRepository usuarioRepository;
     private final PerfilRepository perfilRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UsuarioService(UsuarioRepository usuarioRepository) {
+        this(usuarioRepository, null, new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder());
+    }
 
     public UsuarioService(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository) {
+        this(usuarioRepository, perfilRepository, new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public UsuarioService(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository,
+                          PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.perfilRepository = perfilRepository;
+        this.passwordEncoder = passwordEncoder == null
+            ? new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder()
+            : passwordEncoder;
     }
 
-    public List<UsuarioResponseDTO> findAll() {
-        return usuarioRepository.findAll().stream().map(this::aDto).toList();
-    }
-
-    public UsuarioResponseDTO findById(Long id) {
-        return aDto(obtener(id));
-    }
+    public List<UsuarioResponseDTO> findAll() { return usuarioRepository.findAll().stream().map(this::aDto).toList(); }
+    public UsuarioResponseDTO findById(Integer id) { return aDto(obtener(id)); }
 
     public UsuarioResponseDTO create(UsuarioRequestDTO dto) {
-        var perfil = obtenerPerfil(dto.perfilId());
-        Usuario u = new Usuario(dto.nombreuser().trim(), dto.email().trim(),
-                dto.passwordHash(), dto.telefono(), dto.rol().trim());
-        return aDto(usuarioRepository.save(u));
+        validarEmailUnico(dto.email().trim(), null);
+        Perfil perfil = perfilRepository == null ? new Perfil(dto.rol().trim(), dto.rol()) : obtenerPerfilPorNombre(dto.rol().trim());
+        Usuario usuario = new Usuario(dto.nombreuser().trim(), dto.email().trim(), dto.telefono(), perfil, true);
+        usuario.setPasswordHash(passwordEncoder.encode(dto.passwordHash()));
+        usuario.setRol(dto.rol().trim());
+        return aDto(usuarioRepository.save(usuario));
     }
 
     public UsuarioResponseDTO update(Integer id, UsuarioRequestDTO dto) {
         Usuario actual = obtener(id);
-        actual.setNombreuser(dto.nombreuser().trim());
+        validarEmailUnico(dto.email().trim(), id.longValue());
+        actual.setNombre(dto.nombreuser().trim());
         actual.setEmail(dto.email().trim());
-        actual.setPasswordHash(dto.passwordHash());
         actual.setTelefono(dto.telefono());
+        actual.setPerfil(perfilRepository == null ? new Perfil(dto.rol().trim(), dto.rol()) : obtenerPerfilPorNombre(dto.rol().trim()));
+        actual.setPasswordHash(passwordEncoder.encode(dto.passwordHash()));
         actual.setRol(dto.rol().trim());
         return aDto(usuarioRepository.save(actual));
-        validarEmailUnico(dto.email().trim(), null);
-        Usuario u = new Usuario(dto.nombre().trim(), dto.email().trim(), dto.telefono(),
-                perfil, dto.activo() == null || dto.activo());
-        return aDto(usuarioRepository.save(u));
     }
 
-    public UsuarioResponseDTO update(Long id, UsuarioRequestDTO dto) {
-        Usuario actual = obtener(id);
-        var perfil = obtenerPerfil(dto.perfilId());
-        validarEmailUnico(dto.email().trim(), id);
-        actual.setNombre(dto.nombre().trim());
-        actual.setEmail(dto.email().trim());
-        actual.setTelefono(dto.telefono());
-        actual.setPerfil(perfil);
-        actual.setActivo(dto.activo() == null || dto.activo());
-        return aDto(usuarioRepository.save(actual));
-    }
-
-    public void delete(Long id) {
-        obtener(id);
-        usuarioRepository.deleteById(id);
-    }
-
-    private Usuario obtener(Long id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
-    }
-
-    private Perfil obtenerPerfil(Long id) {
-        return perfilRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Perfil no encontrado con id " + id));
-    }
-
-    public void delete(Integer id) {
-        Usuario u = obtener(id);
-        usuarioRepository.delete(u);
-    }
+    public void delete(Integer id) { usuarioRepository.delete(obtener(id)); }
 
     public Usuario obtener(Integer id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
     }
 
-    private void validarEmailUnico(String email, Long exceptoId) {
-        datos.values().stream()
-                .filter(u -> u.email().equalsIgnoreCase(email))
-                .filter(u -> exceptoId == null || !u.id().equals(exceptoId))
-                .findFirst()
-                .ifPresent(u -> {
-                    throw new IllegalArgumentException("Ya existe un usuario con el email " + email);
-                });
-
+    private Perfil obtenerPerfilPorNombre(String nombre) {
+        return perfilRepository.findByNombreIgnoreCase(nombre)
+                .orElseThrow(() -> new NotFoundException("Perfil no encontrado con nombre " + nombre));
     }
 
     private void validarEmailUnico(String email, Long exceptoId) {
         usuarioRepository.findByEmailIgnoreCase(email)
-                .filter(u -> exceptoId == null || !u.getId().equals(exceptoId))
-                .ifPresent(u -> {
-                    throw new IllegalArgumentException("Ya existe un usuario con el email " + email);
-                });
+                .filter(usuario -> exceptoId == null || !usuario.getId().equals(exceptoId))
+                .ifPresent(usuario -> { throw new IllegalArgumentException("Ya existe un usuario con el email " + email); });
     }
 
-    private UsuarioResponseDTO aDto(Usuario u) {
-        return new UsuarioResponseDTO(u.getId(), u.getNombre(), u.getEmail(), u.getTelefono(),
-                u.getPerfil().getId(), u.getPerfil().getNombre(), u.isActivo());
+    private UsuarioResponseDTO aDto(Usuario usuario) {
+        String rol = usuario.getPerfil() == null ? usuario.getRol() : usuario.getPerfil().getNombre();
+        return new UsuarioResponseDTO(Math.toIntExact(usuario.getId()), usuario.getNombre(), usuario.getEmail(),
+            usuario.getTelefono(), rol);
     }
 }
