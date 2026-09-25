@@ -8,5 +8,6 @@ public record ServicioResponseDTO(
         BigDecimal precio,
         String duracion,
         String categoria,
-        String imagen) {
+        String imagen,
+        Integer idcitas) {
 }

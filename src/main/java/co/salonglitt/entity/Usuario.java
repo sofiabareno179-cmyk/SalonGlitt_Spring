@@ -1,31 +1,24 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuario")
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idusuario")
+    private Integer id;
 
-    @Column(nullable = false, length = 120)
-    private String nombre;
+    @Column(nullable = false, unique = true, length = 100)
+    private String nombreuser;
 
-    @Column(nullable = false, unique = true, length = 120)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(length = 30)
-    private String telefono;
+    @Column(name = "password_hash", nullable = false, length = 250)
+    private String passwordHash;
 
     @Column(name = "password_hash", length = 100)
     private String passwordHash;
@@ -37,18 +30,18 @@ public class Usuario {
     @JoinColumn(name = "perfil_id", nullable = false)
     private Perfil perfil;
 
-    @Column(nullable = false)
-    private boolean activo = true;
+    @Column(nullable = false, length = 20)
+    private String rol;
 
     public Usuario() {
     }
 
-    public Usuario(String nombre, String email, String telefono, Perfil perfil, boolean activo) {
-        this.nombre = nombre;
+    public Usuario(String nombreuser, String email, String passwordHash, String telefono, String rol) {
+        this.nombreuser = nombreuser;
         this.email = email;
+        this.passwordHash = passwordHash;
         this.telefono = telefono;
-        this.perfil = perfil;
-        this.activo = activo;
+        this.rol = rol;
     }
 
     public Usuario(String nombre, String email, String passwordHash, String telefono, String rol) {
@@ -64,7 +57,7 @@ public class Usuario {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -76,8 +69,8 @@ public class Usuario {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setNombreuser(String nombreuser) {
+        this.nombreuser = nombreuser;
     }
 
     public String getEmail() {
@@ -88,12 +81,12 @@ public class Usuario {
         this.email = email;
     }
 
-    public String getTelefono() {
-        return telefono;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getPasswordHash() {
@@ -116,15 +109,15 @@ public class Usuario {
         return perfil;
     }
 
-    public void setPerfil(Perfil perfil) {
-        this.perfil = perfil;
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
-    public boolean isActivo() {
-        return activo;
+    public String getRol() {
+        return rol;
     }
 
-    public void setActivo(boolean activo) {
-        this.activo = activo;
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 }

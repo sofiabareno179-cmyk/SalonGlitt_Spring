@@ -6,6 +6,7 @@ import co.salonglitt.entity.Perfil;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.PerfilRepository;
+import co.salonglitt.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -73,7 +74,7 @@ public class PerfilService {
         perfilRepository.findByNombreIgnoreCase(nombre)
                 .filter(p -> exceptoId == null || !p.getId().equals(exceptoId))
                 .ifPresent(p -> {
-                    throw new IllegalArgumentException("Ya existe un perfil con el nombre " + nombre);
+                    throw new IllegalArgumentException("El usuario " + usuarioId + " ya tiene un perfil");
                 });
     }
 

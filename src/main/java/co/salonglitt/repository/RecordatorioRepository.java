@@ -5,8 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface RecordatorioRepository extends JpaRepository<Recordatorio, Long> {
-    List<Recordatorio> findByCitaId(Long citaId);
-
-    List<Recordatorio> findByEnviadoFalse();
+public interface RecordatorioRepository extends JpaRepository<Recordatorio, Integer> {
+    List<Recordatorio> findByUsuarioId(Integer usuarioId);
 }

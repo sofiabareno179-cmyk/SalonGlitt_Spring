@@ -14,13 +14,20 @@ public class Perfil {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String nombre;
 
-    @Column(length = 200)
-    private String descripcion;
+    @Column(length = 50)
+    private String apellido;
+
+    @Column(columnDefinition = "text")
+    private String bio;
+
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "idusuario", nullable = false, unique = true)
+    private Usuario usuario;
 
     @Transient
     private String apellido;
@@ -34,9 +41,11 @@ public class Perfil {
     public Perfil() {
     }
 
-    public Perfil(String nombre, String descripcion) {
+    public Perfil(String nombre, String apellido, String bio, Usuario usuario) {
         this.nombre = nombre;
-        this.descripcion = descripcion;
+        this.apellido = apellido;
+        this.bio = bio;
+        this.usuario = usuario;
     }
 
     public Perfil(String nombre, String apellido, String bio, Usuario usuario) {
@@ -51,7 +60,7 @@ public class Perfil {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -67,12 +76,28 @@ public class Perfil {
         this.nombre = nombre;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getApellido() {
+        return apellido;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getApellido() { return apellido; }

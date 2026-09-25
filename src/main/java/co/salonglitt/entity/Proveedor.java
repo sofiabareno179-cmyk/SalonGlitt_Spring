@@ -1,11 +1,6 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "proveedores")
@@ -13,48 +8,57 @@ public class Proveedor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idproveedores")
+    private Integer id;
 
-    @Column(nullable = false, length = 150)
-    private String nombre;
+    @Column(name = "nombre_empresa", nullable = false, length = 150)
+    private String nombreEmpresa;
 
-    @Column(length = 30)
+    @Column(name = "contacto_nombre", nullable = false, length = 150)
+    private String contactoNombre;
+
+    @Column(nullable = false, length = 20)
     private String telefono;
 
-    @Column(length = 150)
+    @Column(length = 100)
     private String email;
 
     @Column(length = 250)
     private String direccion;
 
-    @Column(nullable = false)
-    private boolean activo = true;
-
     public Proveedor() {
     }
 
-    public Proveedor(String nombre, String telefono, String email, String direccion, boolean activo) {
-        this.nombre = nombre;
+    public Proveedor(String nombreEmpresa, String contactoNombre, String telefono, String email, String direccion) {
+        this.nombreEmpresa = nombreEmpresa;
+        this.contactoNombre = contactoNombre;
         this.telefono = telefono;
         this.email = email;
         this.direccion = direccion;
-        this.activo = activo;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getNombreEmpresa() {
+        return nombreEmpresa;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setNombreEmpresa(String nombreEmpresa) {
+        this.nombreEmpresa = nombreEmpresa;
+    }
+
+    public String getContactoNombre() {
+        return contactoNombre;
+    }
+
+    public void setContactoNombre(String contactoNombre) {
+        this.contactoNombre = contactoNombre;
     }
 
     public String getTelefono() {
@@ -79,13 +83,5 @@ public class Proveedor {
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
-    }
-
-    public boolean isActivo() {
-        return activo;
-    }
-
-    public void setActivo(boolean activo) {
-        this.activo = activo;
     }
 }

@@ -15,32 +15,37 @@ public class Servicio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idservicio")
+    private Integer id;
 
     @Column(nullable = false, length = 120)
     private String nombre;
 
-    @Column(length = 300)
-    private String descripcion;
-
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
-    @Column(name = "duracion_minutos", nullable = false)
-    private Integer duracionMinutos;
+    @Column(nullable = false, length = 50)
+    private String duracion;
 
-    @Column(nullable = false)
-    private boolean activo = true;
+    @Column(nullable = false, length = 100)
+    private String categoria;
+
+    @Column(length = 500)
+    private String imagen;
+
+    @Column(name = "idcitas")
+    private Integer idcitas;
 
     public Servicio() {
     }
 
-    public Servicio(String nombre, String descripcion, BigDecimal precio, Integer duracionMinutos, boolean activo) {
+    public Servicio(String nombre, BigDecimal precio, String duracion, String categoria, String imagen, Integer idcitas) {
         this.nombre = nombre;
-        this.descripcion = descripcion;
         this.precio = precio;
-        this.duracionMinutos = duracionMinutos;
-        this.activo = activo;
+        this.duracion = duracion;
+        this.categoria = categoria;
+        this.imagen = imagen;
+        this.idcitas = idcitas;
     }
 
     public Servicio(String nombre, BigDecimal precio, String duracion, String categoria, String imagen) {
@@ -55,7 +60,7 @@ public class Servicio {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -71,14 +76,6 @@ public class Servicio {
         this.nombre = nombre;
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
     public BigDecimal getPrecio() {
         return precio;
     }
@@ -87,19 +84,35 @@ public class Servicio {
         this.precio = precio;
     }
 
-    public Integer getDuracionMinutos() {
-        return duracionMinutos;
+    public String getDuracion() {
+        return duracion;
     }
 
-    public void setDuracionMinutos(Integer duracionMinutos) {
-        this.duracionMinutos = duracionMinutos;
+    public void setDuracion(String duracion) {
+        this.duracion = duracion;
     }
 
-    public boolean isActivo() {
-        return activo;
+    public String getCategoria() {
+        return categoria;
     }
 
-    public void setActivo(boolean activo) {
-        this.activo = activo;
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
+    }
+
+    public Integer getIdcitas() {
+        return idcitas;
+    }
+
+    public void setIdcitas(Integer idcitas) {
+        this.idcitas = idcitas;
     }
 }

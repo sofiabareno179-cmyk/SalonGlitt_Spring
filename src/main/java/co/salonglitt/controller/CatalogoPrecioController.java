@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/catalogo-precios")
-@Tag(name = "Catálogo de precios", description = "Precios de los servicios por período")
+@Tag(name = "Catálogo de precios", description = "Precios de los servicios por categoría")
 public class CatalogoPrecioController {
 
     private final CatalogoPrecioService catalogoPrecioService;
@@ -31,32 +31,26 @@ public class CatalogoPrecioController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener precio por ID")
-    public CatalogoPrecioResponseDTO obtener(@PathVariable Long id) {
+    public CatalogoPrecioResponseDTO obtener(@PathVariable Integer id) {
         return catalogoPrecioService.findById(id);
     }
 
-    @GetMapping("/servicio/{servicioId}")
-    @Operation(summary = "Listar precios por servicio")
-    public List<CatalogoPrecioResponseDTO> listarPorServicio(@PathVariable Long servicioId) {
-        return catalogoPrecioService.findByServicio(servicioId);
-    }
-
     @PostMapping
-    @Operation(summary = "Crear precio de catálogo", description = "El servicio debe existir")
+    @Operation(summary = "Crear precio de catálogo")
     public ResponseEntity<CatalogoPrecioResponseDTO> crear(@Valid @RequestBody CatalogoPrecioRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogoPrecioService.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar precio de catálogo")
-    public CatalogoPrecioResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody CatalogoPrecioRequestDTO dto) {
+    public CatalogoPrecioResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody CatalogoPrecioRequestDTO dto) {
         return catalogoPrecioService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar precio de catálogo")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         catalogoPrecioService.delete(id);
     }
 }

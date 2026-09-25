@@ -31,6 +31,12 @@ public class AgendaController {
     @Operation(summary = "Obtener agenda por ID")
     public AgendaResponseDTO obtener(@PathVariable Integer id) { return agendaService.findById(id); }
 
+    @GetMapping("/usuario/{usuarioId}")
+    @Operation(summary = "Listar horarios por usuario")
+    public List<AgendaResponseDTO> listarPorUsuario(@PathVariable Integer usuarioId) {
+        return agendaService.findByUsuario(usuarioId);
+    }
+
     @PostMapping
     @Operation(summary = "Crear horario", description = "El usuario debe existir. Ej. diasemana=lunes, horainicio=09:00, horafin=14:00")
     public ResponseEntity<AgendaResponseDTO> crear(@Valid @RequestBody AgendaRequestDTO dto) {

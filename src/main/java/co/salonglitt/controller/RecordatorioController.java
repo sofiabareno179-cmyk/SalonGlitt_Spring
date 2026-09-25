@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/recordatorios")
-@Tag(name = "Recordatorios", description = "Recordatorios asociados a las citas")
+@Tag(name = "Recordatorios", description = "Recordatorios asociados a los usuarios")
 public class RecordatorioController {
 
     private final RecordatorioService recordatorioService;
@@ -31,32 +31,32 @@ public class RecordatorioController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener recordatorio por ID")
-    public RecordatorioResponseDTO obtener(@PathVariable Long id) {
+    public RecordatorioResponseDTO obtener(@PathVariable Integer id) {
         return recordatorioService.findById(id);
     }
 
-    @GetMapping("/cita/{citaId}")
-    @Operation(summary = "Listar recordatorios de una cita")
-    public List<RecordatorioResponseDTO> listarPorCita(@PathVariable Long citaId) {
-        return recordatorioService.findByCita(citaId);
+    @GetMapping("/usuario/{usuarioId}")
+    @Operation(summary = "Listar recordatorios de un usuario")
+    public List<RecordatorioResponseDTO> listarPorUsuario(@PathVariable Integer usuarioId) {
+        return recordatorioService.findByUsuario(usuarioId);
     }
 
     @PostMapping
-    @Operation(summary = "Crear recordatorio", description = "La cita debe existir")
+    @Operation(summary = "Crear recordatorio", description = "El usuario debe existir")
     public ResponseEntity<RecordatorioResponseDTO> crear(@Valid @RequestBody RecordatorioRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(recordatorioService.create(dto));
     }
 
-    @PatchMapping("/{id}/enviado")
-    @Operation(summary = "Marcar recordatorio como enviado")
-    public RecordatorioResponseDTO marcarEnviado(@PathVariable Long id) {
-        return recordatorioService.marcarEnviado(id);
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar recordatorio")
+    public RecordatorioResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody RecordatorioRequestDTO dto) {
+        return recordatorioService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar recordatorio")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         recordatorioService.delete(id);
     }
 }

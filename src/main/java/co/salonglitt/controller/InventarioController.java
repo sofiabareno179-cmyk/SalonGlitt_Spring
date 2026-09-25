@@ -31,7 +31,7 @@ public class InventarioController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener inventario por ID")
-    public InventarioResponseDTO obtener(@PathVariable Long id) {
+    public InventarioResponseDTO obtener(@PathVariable Integer id) {
         return inventarioService.findById(id);
     }
 
@@ -43,14 +43,14 @@ public class InventarioController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar inventario")
-    public InventarioResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody InventarioRequestDTO dto) {
+    public InventarioResponseDTO actualizar(@PathVariable Integer id, @Valid @RequestBody InventarioRequestDTO dto) {
         return inventarioService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar inventario")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Integer id) {
         inventarioService.delete(id);
     }
 }

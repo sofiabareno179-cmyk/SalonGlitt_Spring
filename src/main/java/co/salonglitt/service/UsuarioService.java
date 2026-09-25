@@ -2,10 +2,8 @@ package co.salonglitt.service;
 
 import co.salonglitt.dto.UsuarioRequestDTO;
 import co.salonglitt.dto.UsuarioResponseDTO;
-import co.salonglitt.entity.Perfil;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
-import co.salonglitt.repository.PerfilRepository;
 import co.salonglitt.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;

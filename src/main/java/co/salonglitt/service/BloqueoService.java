@@ -26,54 +26,57 @@ public class BloqueoService {
         return bloqueoRepository.findAll().stream().map(this::aDto).toList();
     }
 
-    public BloqueoResponseDTO findById(Long id) {
+    public BloqueoResponseDTO findById(Integer id) {
         return aDto(obtener(id));
     }
 
-    public List<BloqueoResponseDTO> findByEstilista(Long estilistaId) {
-        validarEstilista(estilistaId);
-        return bloqueoRepository.findByEstilistaId(estilistaId).stream().map(this::aDto).toList();
+    public List<BloqueoResponseDTO> findByUsuario(Integer usuarioId) {
+        validarUsuario(usuarioId);
+        return bloqueoRepository.findByUsuarioId(usuarioId).stream().map(this::aDto).toList();
     }
 
     public BloqueoResponseDTO create(BloqueoRequestDTO dto) {
-        if (!dto.fin().isAfter(dto.inicio())) {
-            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
-        }
-        var estilista = validarEstilista(dto.estilistaId());
-        Bloqueo b = new Bloqueo(estilista, dto.inicio(), dto.fin(), dto.motivo());
+        validarHoras(dto.horaInicio(), dto.horaFin());
+        Usuario usuario = validarUsuario(dto.idusuario());
+        Bloqueo b = new Bloqueo(dto.fecha(), dto.horaInicio().trim(), dto.horaFin().trim(), dto.motivo(), usuario);
         return aDto(bloqueoRepository.save(b));
     }
 
-    public BloqueoResponseDTO update(Long id, BloqueoRequestDTO dto) {
+    public BloqueoResponseDTO update(Integer id, BloqueoRequestDTO dto) {
         Bloqueo actual = obtener(id);
-        if (!dto.fin().isAfter(dto.inicio())) {
-            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
-        }
-        var estilista = validarEstilista(dto.estilistaId());
-        actual.setEstilista(estilista);
-        actual.setInicio(dto.inicio());
-        actual.setFin(dto.fin());
+        validarHoras(dto.horaInicio(), dto.horaFin());
+        Usuario usuario = validarUsuario(dto.idusuario());
+        actual.setFecha(dto.fecha());
+        actual.setHoraInicio(dto.horaInicio().trim());
+        actual.setHoraFin(dto.horaFin().trim());
         actual.setMotivo(dto.motivo());
+        actual.setUsuario(usuario);
         return aDto(bloqueoRepository.save(actual));
     }
 
-    public void delete(Long id) {
+    public void delete(Integer id) {
         obtener(id);
         bloqueoRepository.deleteById(id);
     }
 
-    private Bloqueo obtener(Long id) {
+    private Bloqueo obtener(Integer id) {
         return bloqueoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Bloqueo no encontrado con id " + id));
     }
 
-    private Usuario validarEstilista(Long id) {
+    private Usuario validarUsuario(Integer id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Estilista no encontrado con id " + id));
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
+    }
+
+    private void validarHoras(String inicio, String fin) {
+        if (inicio != null && fin != null && inicio.trim().compareTo(fin.trim()) >= 0) {
+            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
+        }
     }
 
     private BloqueoResponseDTO aDto(Bloqueo b) {
-        return new BloqueoResponseDTO(b.getId(), b.getEstilista().getId(), b.getEstilista().getNombre(),
-                b.getInicio(), b.getFin(), b.getMotivo());
+        return new BloqueoResponseDTO(b.getId(), b.getUsuario().getId(), b.getUsuario().getNombreuser(),
+                b.getFecha(), b.getHoraInicio(), b.getHoraFin(), b.getMotivo(), b.getCreatedAt());
     }
 }

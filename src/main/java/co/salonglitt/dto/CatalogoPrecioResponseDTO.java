@@ -1,13 +1,12 @@
 package co.salonglitt.dto;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record CatalogoPrecioResponseDTO(
-        Long id,
-        Long servicioId,
-        String servicioNombre,
-        BigDecimal precio,
-        LocalDate fechaInicio,
-        LocalDate fechaFin) {
+        Integer id,
+        String nombre,
+        String descripcion,
+        Double precio,
+        String categoria,
+        LocalDateTime fechaCreacion) {
 }

@@ -1,16 +1,6 @@
 package co.salonglitt.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "inventario")
@@ -18,37 +8,54 @@ public class Inventario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "idinventario")
+    private Integer id;
+
+    @Column(nullable = false)
+    private Integer stock;
+
+    @Column(nullable = false, length = 100)
+    private String fecha;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "producto_id", nullable = false)
+    @JoinColumn(name = "idproductos", nullable = false, unique = true)
     private Producto producto;
 
-    @Column(nullable = false)
-    private Integer cantidadTotal;
-
-    @Column(nullable = false)
-    private Integer stockMinimo;
-
-    @Column(name = "ultima_actualizacion", nullable = false)
-    private LocalDateTime ultimaActualizacion = LocalDateTime.now();
+    @Column(length = 20)
+    private String tipo;
 
     public Inventario() {
     }
 
-    public Inventario(Producto producto, Integer cantidadTotal, Integer stockMinimo, LocalDateTime ultimaActualizacion) {
+    public Inventario(Integer stock, String fecha, Producto producto, String tipo) {
+        this.stock = stock;
+        this.fecha = fecha;
         this.producto = producto;
-        this.cantidadTotal = cantidadTotal;
-        this.stockMinimo = stockMinimo;
-        this.ultimaActualizacion = ultimaActualizacion == null ? LocalDateTime.now() : ultimaActualizacion;
+        this.tipo = tipo;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
     }
 
     public Producto getProducto() {
@@ -59,27 +66,11 @@ public class Inventario {
         this.producto = producto;
     }
 
-    public Integer getCantidadTotal() {
-        return cantidadTotal;
+    public String getTipo() {
+        return tipo;
     }
 
-    public void setCantidadTotal(Integer cantidadTotal) {
-        this.cantidadTotal = cantidadTotal;
-    }
-
-    public Integer getStockMinimo() {
-        return stockMinimo;
-    }
-
-    public void setStockMinimo(Integer stockMinimo) {
-        this.stockMinimo = stockMinimo;
-    }
-
-    public LocalDateTime getUltimaActualizacion() {
-        return ultimaActualizacion;
-    }
-
-    public void setUltimaActualizacion(LocalDateTime ultimaActualizacion) {
-        this.ultimaActualizacion = ultimaActualizacion;
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
 }

@@ -1,9 +1,23 @@
 #run-dev.ps1
 param(
-    [string]$Port = "8081"
+    [string]$Port = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+# Cargar variables desde .env (si existe) al entorno del proceso
+if (Test-Path -LiteralPath ".env") {
+    Get-Content -LiteralPath ".env" | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
+            $kv = $line -split "=", 2
+            [System.Environment]::SetEnvironmentVariable($kv[0].Trim(), $kv[1].Trim(), "Process")
+        }
+    }
+} elseif (Test-Path -LiteralPath ".env.example") {
+    Write-Host "AVISO: No existe .env. Copiando desde .env.example..." -ForegroundColor Yellow
+    Copy-Item ".env.example" ".env"
+}
 
 if (-not $env:JAVA_HOME) {
     $jdk = Get-ChildItem 'C:\Program Files\Java' -Directory -Filter 'jdk-*' -ErrorAction SilentlyContinue |
@@ -22,9 +36,8 @@ if (-not (($env:Path -split ';') -contains "$($env:JAVA_HOME)\bin")) {
     $env:Path = "$($env:JAVA_HOME)\bin;$($env:Path)"
 }
 
-if (-not (Test-Path -LiteralPath ".env")) {
-    Write-Host "AVISO: No existe .env. Copiando desde .env.example..." -ForegroundColor Yellow
-    Copy-Item ".env.example" ".env"
+if (-not $Port) {
+    $Port = if ($env:SERVER_PORT) { $env:SERVER_PORT } else { "8080" }
 }
 
 Write-Host "Compilando el proyecto..." -ForegroundColor Cyan

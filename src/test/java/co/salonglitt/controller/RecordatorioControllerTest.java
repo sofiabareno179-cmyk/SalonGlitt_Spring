@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -20,12 +20,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SuppressWarnings("null")
 @WebMvcTest(controllers = RecordatorioController.class)
 class RecordatorioControllerTest {
 
@@ -39,43 +37,35 @@ class RecordatorioControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void listarPorCita_shouldReturnList() throws Exception {
-        RecordatorioResponseDTO dto = new RecordatorioResponseDTO(1L, 1L, LocalDateTime.now().plusDays(1),
-                "EMAIL", false);
-        when(recordatorioService.findByCita(1L)).thenReturn(List.of(dto));
+    void listarPorUsuario_shouldReturnList() throws Exception {
+        RecordatorioResponseDTO dto = new RecordatorioResponseDTO(1, "Tu cita", "Mañana",
+                "2026-09-10", 1);
+        when(recordatorioService.findByUsuario(1)).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/api/recordatorios/cita/1"))
+        mockMvc.perform(get("/api/recordatorios/usuario/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].tipo").value("EMAIL"));
+                .andExpect(jsonPath("$[0].titulo").value("Tu cita"))
+                .andExpect(jsonPath("$[0].idrecordatorios").value(1))
+                .andExpect(jsonPath("$[0].idusuario").value(1));
     }
 
     @Test
     void crear_shouldReturnCreated() throws Exception {
-        RecordatorioRequestDTO request = new RecordatorioRequestDTO(1L, LocalDateTime.now().plusDays(1), "SMS");
-        RecordatorioResponseDTO response = new RecordatorioResponseDTO(2L, 1L, LocalDateTime.now().plusDays(1),
-                "SMS", false);
+        RecordatorioRequestDTO request = new RecordatorioRequestDTO("Tu cita", "Mañana", "2026-09-10", 1);
+        RecordatorioResponseDTO response = new RecordatorioResponseDTO(2, "Tu cita", "Mañana",
+                "2026-09-10", 1);
         when(recordatorioService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/recordatorios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(2));
-    }
-
-    @Test
-    void marcarEnviado_shouldReturnEnviado() throws Exception {
-        RecordatorioResponseDTO response = new RecordatorioResponseDTO(1L, 1L, LocalDateTime.now(), "EMAIL", true);
-        when(recordatorioService.marcarEnviado(1L)).thenReturn(response);
-
-        mockMvc.perform(patch("/api/recordatorios/1/enviado"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.enviado").value(true));
+                .andExpect(jsonPath("$.idrecordatorios").value(2));
     }
 
     @Test
     void obtener_shouldReturn404_whenNotFound() throws Exception {
-        when(recordatorioService.findById(99L)).thenThrow(new NotFoundException("Recordatorio no encontrado con id 99"));
+        when(recordatorioService.findById(99)).thenThrow(new NotFoundException("Recordatorio no encontrado con id 99"));
 
         mockMvc.perform(get("/api/recordatorios/99"))
                 .andExpect(status().isNotFound());
@@ -83,7 +73,7 @@ class RecordatorioControllerTest {
 
     @Test
     void eliminar_shouldReturnNoContent() throws Exception {
-        doNothing().when(recordatorioService).delete(1L);
+        doNothing().when(recordatorioService).delete(1);
 
         mockMvc.perform(delete("/api/recordatorios/1"))
                 .andExpect(status().isNoContent());
