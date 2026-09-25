@@ -48,12 +48,24 @@ public class Servicio {
         this.idcitas = idcitas;
     }
 
-    public Integer getId() {
+    public Servicio(String nombre, BigDecimal precio, String duracion, String categoria, String imagen) {
+        this.nombre = nombre;
+        this.precio = precio;
+        this.descripcion = categoria;
+        this.duracionMinutos = Integer.valueOf(duracion);
+        this.activo = true;
+    }
+
+    public Long getId() {
         return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id == null ? null : id.longValue();
     }
 
     public String getNombre() {

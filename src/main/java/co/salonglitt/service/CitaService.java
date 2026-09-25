@@ -3,10 +3,9 @@ package co.salonglitt.service;
 import co.salonglitt.dto.CitaRequestDTO;
 import co.salonglitt.dto.CitaResponseDTO;
 import co.salonglitt.entity.Cita;
-import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.CitaRepository;
-import co.salonglitt.repository.UsuarioRepository;
+import co.salonglitt.repository.ServicioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,52 +13,46 @@ import java.util.Set;
 
 @Service
 public class CitaService {
-
-    private static final String ESTADO_POR_DEFECTO = "PENDIENTE";
-
-    private static final Set<String> ESTADOS_VALIDOS =
-            Set.of("PENDIENTE", "CONFIRMADA", "COMPLETADA", "CANCELADA");
-
+    private static final Set<String> ESTADOS_VALIDOS = Set.of("PENDIENTE", "CONFIRMADA", "COMPLETADA", "CANCELADA", "ESPERA");
     private final CitaRepository citaRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
+    private final ServicioRepository servicioRepository;
 
-    public CitaService(CitaRepository citaRepository, UsuarioRepository usuarioRepository) {
+    public CitaService(CitaRepository citaRepository, UsuarioService usuarioService, ServicioRepository servicioRepository) {
         this.citaRepository = citaRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.usuarioService = usuarioService;
+        this.servicioRepository = servicioRepository;
     }
 
-    public List<CitaResponseDTO> findAll() {
-        return citaRepository.findAll().stream().map(this::aDto).toList();
+    public List<CitaResponseDTO> findAll() { return citaRepository.findAll().stream().map(this::aDto).toList(); }
+    public CitaResponseDTO findById(Integer id) { return aDto(obtener(id)); }
+    public List<CitaResponseDTO> findByUsuario(Integer usuarioId) { return findByCliente(usuarioId); }
+    public List<CitaResponseDTO> findByCliente(Integer usuarioId) {
+        usuarioService.obtener(usuarioId);
+        return citaRepository.findByUsuarioId(usuarioId).stream().map(this::aDto).toList();
     }
-
-    public CitaResponseDTO findById(Integer id) {
-        return aDto(obtener(id));
-    }
-
-    public List<CitaResponseDTO> findByUsuario(Integer usuarioId) {
-        List<Cita> result = citaRepository.findByUsuarioId(usuarioId);
-        if (result.isEmpty() && !usuarioRepository.existsById(usuarioId)) {
-            throw new NotFoundException("Usuario no encontrado con id " + usuarioId);
-        }
-        return result.stream().map(this::aDto).toList();
-    }
-
     public List<CitaResponseDTO> findByEstado(String estado) {
         return citaRepository.findByEstadoIgnoreCase(estado).stream().map(this::aDto).toList();
     }
 
     public CitaResponseDTO create(CitaRequestDTO dto) {
-        Usuario usuario = validarUsuario(dto.idusuario());
-        Cita c = new Cita(usuario, dto.fechahora(), resolverEstado(dto.estado()), dto.servicio().trim());
-        return aDto(citaRepository.save(c));
+        var usuario = usuarioService.obtener(dto.clienteId().intValue());
+        if (dto.servicioId() == null || servicioRepository == null) {
+            return aDto(citaRepository.save(new Cita(usuario, dto.fechaHora(), resolverEstado(dto.estado()), dto.servicio())));
+        }
+        Cita cita = new Cita(usuario, servicioRepository.findById(dto.servicioId()).orElseThrow(), dto.fechaHora(), resolverEstado(dto.estado()));
+        return aDto(citaRepository.save(cita));
     }
 
     public CitaResponseDTO update(Integer id, CitaRequestDTO dto) {
         Cita actual = obtener(id);
-        Usuario usuario = validarUsuario(dto.idusuario());
-        actual.setUsuario(usuario);
-        actual.setFechahora(dto.fechahora());
-        actual.setServicio(dto.servicio().trim());
+        actual.setCliente(usuarioService.obtener(dto.clienteId().intValue()));
+        if (dto.servicioId() != null && servicioRepository != null) {
+            actual.setServicio(servicioRepository.findById(dto.servicioId()).orElseThrow());
+        } else {
+            actual.setServicioLegacy(dto.servicio());
+        }
+        actual.setFechaHora(dto.fechaHora());
         actual.setEstado(resolverEstado(dto.estado()));
         return aDto(citaRepository.save(actual));
     }
@@ -70,35 +63,21 @@ public class CitaService {
         return aDto(citaRepository.save(actual));
     }
 
-    public void delete(Integer id) {
-        obtener(id);
-        citaRepository.deleteById(id);
-    }
-
-    private Cita obtener(Integer id) {
-        return citaRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Cita no encontrada con id " + id));
-    }
-
-    private Usuario validarUsuario(Integer id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
-    }
-
+    public void delete(Integer id) { citaRepository.delete(obtener(id)); }
+    private Cita obtener(Integer id) { return citaRepository.findById(id).orElseThrow(() -> new NotFoundException("Cita no encontrada con id " + id)); }
     private String resolverEstado(String estado) {
-        if (estado == null || estado.isBlank()) {
-            return ESTADO_POR_DEFECTO;
-        }
-        String normalizado = estado.trim().toUpperCase();
-        if (!ESTADOS_VALIDOS.contains(normalizado)) {
-            throw new IllegalArgumentException("Estado no válido: " + estado
-                    + ". Permitidos: " + String.join(", ", ESTADOS_VALIDOS));
-        }
-        return normalizado;
+        String normalizado = estado == null || estado.isBlank() ? "ESPERA" : estado.trim().toUpperCase();
+        if (!ESTADOS_VALIDOS.contains(normalizado)) throw new IllegalArgumentException("Estado no válido: " + estado);
+        return switch (normalizado) {
+            case "PENDIENTE", "ESPERA" -> "Espera";
+            case "CONFIRMADA" -> "Confirmada";
+            case "COMPLETADA" -> "Completada";
+            case "CANCELADA" -> "Cancelada";
+            default -> normalizado;
+        };
     }
-
-    private CitaResponseDTO aDto(Cita c) {
-        return new CitaResponseDTO(c.getId(), c.getUsuario().getId(), c.getUsuario().getNombreuser(),
-                c.getFechahora(), c.getEstado(), c.getServicio());
+    private CitaResponseDTO aDto(Cita cita) {
+        return new CitaResponseDTO(Math.toIntExact(cita.getId()), Math.toIntExact(cita.getCliente().getId()), cita.getCliente().getNombre(),
+                cita.getFechaHora(), cita.getEstado(), cita.getServicio() == null ? cita.getServicioLegacy() : cita.getServicio().getNombre());
     }
 }

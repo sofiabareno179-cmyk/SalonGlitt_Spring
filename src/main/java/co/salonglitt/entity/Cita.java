@@ -26,6 +26,9 @@ public class Cita {
     @Column(length = 150)
     private String servicio;
 
+    @Column(name = "servicio_legacy", length = 120)
+    private String servicioLegacy;
+
     public Cita() {
     }
 
@@ -36,7 +39,14 @@ public class Cita {
         this.servicio = servicio;
     }
 
-    public Integer getId() {
+    public Cita(Usuario cliente, LocalDateTime fechaHora, String estado, String servicio) {
+        this.cliente = cliente;
+        this.fechaHora = fechaHora;
+        this.estado = estado == null ? "ESPERA" : estado;
+        this.servicioLegacy = servicio;
+    }
+
+    public Long getId() {
         return id;
     }
 
@@ -44,8 +54,12 @@ public class Cita {
         this.id = id;
     }
 
-    public LocalDateTime getFechahora() {
-        return fechahora;
+    public void setId(Integer id) {
+        this.id = id == null ? null : id.longValue();
+    }
+
+    public Usuario getCliente() {
+        return cliente;
     }
 
     public void setFechahora(LocalDateTime fechahora) {
@@ -75,4 +89,7 @@ public class Cita {
     public void setServicio(String servicio) {
         this.servicio = servicio;
     }
+
+    public String getServicioLegacy() { return servicioLegacy; }
+    public void setServicioLegacy(String servicioLegacy) { this.servicioLegacy = servicioLegacy; }
 }

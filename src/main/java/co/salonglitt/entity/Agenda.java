@@ -1,6 +1,8 @@
 package co.salonglitt.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "agenda")
@@ -32,6 +34,13 @@ public class Agenda {
         this.horainicio = horainicio;
         this.horafin = horafin;
         this.usuario = usuario;
+    }
+
+    public Agenda(Usuario usuario, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, boolean disponible) {
+        this.usuario = usuario;
+        this.diasemana = fecha.getDayOfWeek().name();
+        this.horainicio = horaInicio.toString();
+        this.horafin = horaFin.toString();
     }
 
     public Integer getId() {

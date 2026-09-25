@@ -6,76 +6,44 @@ import co.salonglitt.entity.Agenda;
 import co.salonglitt.entity.Usuario;
 import co.salonglitt.exception.NotFoundException;
 import co.salonglitt.repository.AgendaRepository;
-import co.salonglitt.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class AgendaService {
-
     private final AgendaRepository agendaRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
-    public AgendaService(AgendaRepository agendaRepository, UsuarioRepository usuarioRepository) {
+    public AgendaService(AgendaRepository agendaRepository, UsuarioService usuarioService) {
         this.agendaRepository = agendaRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.usuarioService = usuarioService;
     }
 
-    public List<AgendaResponseDTO> findAll() {
-        return agendaRepository.findAll().stream().map(this::aDto).toList();
-    }
-
-    public AgendaResponseDTO findById(Integer id) {
-        return aDto(obtener(id));
-    }
-
-    public List<AgendaResponseDTO> findByUsuario(Integer usuarioId) {
-        validarUsuario(usuarioId);
-        return agendaRepository.findByUsuarioId(usuarioId).stream().map(this::aDto).toList();
-    }
+    public List<AgendaResponseDTO> findAll() { return agendaRepository.findAll().stream().map(this::aDto).toList(); }
+    public AgendaResponseDTO findById(Integer id) { return aDto(obtener(id)); }
 
     public AgendaResponseDTO create(AgendaRequestDTO dto) {
-        validarHoras(dto.horainicio(), dto.horafin());
-        Usuario usuario = validarUsuario(dto.usuarioId());
-        Agenda a = new Agenda(dto.diasemana().trim(), dto.horainicio().trim(), dto.horafin().trim(), usuario);
-        return aDto(agendaRepository.save(a));
+        return aDto(agendaRepository.save(new Agenda(dto.diasemana(), dto.horainicio(), dto.horafin(), usuarioService.obtener(dto.usuarioId()))));
     }
 
     public AgendaResponseDTO update(Integer id, AgendaRequestDTO dto) {
         Agenda actual = obtener(id);
-        validarHoras(dto.horainicio(), dto.horafin());
-        Usuario usuario = validarUsuario(dto.usuarioId());
-        actual.setDiasemana(dto.diasemana().trim());
-        actual.setHorainicio(dto.horainicio().trim());
-        actual.setHorafin(dto.horafin().trim());
-        actual.setUsuario(usuario);
+        actual.setDiasemana(dto.diasemana());
+        actual.setHorainicio(dto.horainicio());
+        actual.setHorafin(dto.horafin());
+        actual.setUsuario(usuarioService.obtener(dto.usuarioId()));
         return aDto(agendaRepository.save(actual));
     }
 
-    public void delete(Integer id) {
-        obtener(id);
-        agendaRepository.deleteById(id);
-    }
+    public void delete(Integer id) { agendaRepository.delete(obtener(id)); }
 
     private Agenda obtener(Integer id) {
-        return agendaRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Bloque de agenda no encontrado con id " + id));
+        return agendaRepository.findById(id).orElseThrow(() -> new NotFoundException("Agenda no encontrada con id " + id));
     }
 
-    private Usuario validarUsuario(Integer id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id " + id));
-    }
-
-    private void validarHoras(String inicio, String fin) {
-        if (inicio != null && fin != null && inicio.trim().compareTo(fin.trim()) >= 0) {
-            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
-        }
-    }
-
-    private AgendaResponseDTO aDto(Agenda a) {
-        return new AgendaResponseDTO(a.getId(), a.getDiasemana(), a.getHorainicio(), a.getHorafin(),
-                a.getUsuario().getId(), a.getUsuario().getNombreuser());
+    private AgendaResponseDTO aDto(Agenda agenda) {
+        return new AgendaResponseDTO(agenda.getId(), agenda.getDiasemana(), agenda.getHorainicio(), agenda.getHorafin(),
+                Math.toIntExact(agenda.getUsuario().getId()), agenda.getUsuario().getNombre());
     }
 }

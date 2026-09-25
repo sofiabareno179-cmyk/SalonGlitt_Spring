@@ -5,6 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface PerfilRepository extends JpaRepository<Perfil, Integer> {
-    Optional<Perfil> findByUsuarioId(Integer usuarioId);
+public interface PerfilRepository extends JpaRepository<Perfil, Long> {
+    Optional<Perfil> findByNombreIgnoreCase(String nombre);
+
+    default Optional<Perfil> findById(Integer id) {
+        return findById(id.longValue());
+    }
 }
